@@ -12,7 +12,7 @@
   </div>
   <div class="dash-wrap">
     <h1>Welcome, <%= student.name %></h1>
-    <% if (justPaid) { %><div style="background:#d1fae5; color:#065f46; padding:14px 18px; border-radius:8px; font-size:14px; margin:18px 0;">✅ Payment confirmed for order <%= justPaid %>. We'll start working on it right away.</div><% } %>
+    <% if (justPaid) { %><div style="background:#d1fae5; color:#065f46; padding:14px 18px; border-radius:8px; font-size:14px; margin:18px 0; display:flex; align-items:center; gap:8px;"><%- include('partials/icon', {name:'check'}) %> Payment confirmed for order <%= justPaid %>. We'll start working on it right away.</div><% } %>
     <p class="muted">Your orders and their current status.</p>
 
     <% if (orders.length === 0) { %>
@@ -41,7 +41,7 @@
         <h4 style="font-size:13.5px; margin:16px 0 8px;">Documents</h4>
         <% if (order.documents && order.documents.length > 0) { %>
           <% order.documents.forEach(doc => { %>
-            <div style="font-size:13px; padding:6px 0;"><a href="/documents/<%= doc.id %>/download" style="color:var(--navy); font-weight:600;">📎 <%= doc.originalName %></a> <span class="muted">(<%= doc.uploadedBy %>)</span></div>
+            <div style="font-size:13px; padding:6px 0; display:flex; align-items:center; gap:6px;"><%- include('partials/icon', {name:'clip', size:14}) %><a href="/documents/<%= doc.id %>/download" style="color:var(--navy); font-weight:600;"><%= doc.originalName %></a> <span class="muted">(<%= doc.uploadedBy %>)</span></div>
           <% }) %>
         <% } else { %>
           <p class="muted" style="font-size:13px;">No documents uploaded yet.</p>

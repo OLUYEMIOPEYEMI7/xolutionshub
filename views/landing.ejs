@@ -29,10 +29,10 @@
         <h1>Build a support package around the stage you're actually at.</h1>
         <p class="hero-sub">Choose exactly what you need — nothing more. XOLUTIONS HUB prices every service up front, tracks your order from submission to delivery, and keeps your documents secure throughout.</p>
         <div class="hero-badges">
-          <span class="hero-badge">🔒 Secure Paystack payment</span>
-          <span class="hero-badge">📊 Live order tracking</span>
-          <span class="hero-badge">📄 Confidential document handling</span>
-          <span class="hero-badge">🎓 Built for Nigerian undergraduates</span>
+          <span class="hero-badge"><%- include('partials/icon', {name:'lock', size:14}) %> Secure Paystack payment</span>
+          <span class="hero-badge"><%- include('partials/icon', {name:'chart', size:14}) %> Live order tracking</span>
+          <span class="hero-badge"><%- include('partials/icon', {name:'file', size:14}) %> Confidential document handling</span>
+          <span class="hero-badge"><%- include('partials/icon', {name:'cap', size:14}) %> Built for Nigerian undergraduates</span>
         </div>
       </div>
       <div class="hero-steps">
@@ -47,10 +47,10 @@
 
   <div class="trust-strip">
     <div class="trust-strip-inner">
-      <div class="trust-item">🔐 Payments secured by Paystack</div>
-      <div class="trust-item">📬 Email confirmation on every order</div>
-      <div class="trust-item">🤝 WhatsApp support: 0904 137 2994</div>
-      <div class="trust-item">🗂️ Order history always available in your dashboard</div>
+      <div class="trust-item"><%- include('partials/icon', {name:'shield'}) %> Payments secured by Paystack</div>
+      <div class="trust-item"><%- include('partials/icon', {name:'mail'}) %> Email confirmation on every order</div>
+      <div class="trust-item"><%- include('partials/icon', {name:'handshake'}) %> WhatsApp support: 0904 137 2994</div>
+      <div class="trust-item"><%- include('partials/icon', {name:'folder'}) %> Order history always available in your dashboard</div>
     </div>
   </div>
 
@@ -87,7 +87,7 @@
           <% }) %>
 
           <div class="delivery-box">
-            <h3>⏱ Delivery Speed</h3>
+            <h3><%- include('partials/icon', {name:'clock'}) %> Delivery Speed</h3>
             <div class="delivery-options">
               <% services.deliverySpeeds.forEach((d, i) => { %>
                 <label class="delivery-option <%= i === 0 ? 'active' : '' %>" data-speed="<%= d.key %>">
@@ -101,7 +101,7 @@
           </div>
 
           <div class="details-box">
-            <h3>📝 Your Details & Project</h3>
+            <h3><%- include('partials/icon', {name:'edit'}) %> Your Details & Project</h3>
             <div class="form-row">
               <div class="form-group"><label>Full Name *</label><input type="text" name="name" required placeholder="Your full name" /></div>
               <div class="form-group"><label>Email Address *</label><input type="email" name="email" required placeholder="you@example.com" /></div>
@@ -143,7 +143,7 @@
               <div class="row grand"><span>TOTAL</span><span id="sum-total">₦0</span></div>
             </div>
             <button type="submit" class="btn btn-block btn-lg">Continue to Payment</button>
-            <p class="summary-fine">🔒 Secure order processing via Paystack</p>
+            <p class="summary-fine"><%- include('partials/icon', {name:'lock', size:13}) %> Secure order processing via Paystack</p>
           </div>
         </div>
       </div>

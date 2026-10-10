@@ -32,7 +32,7 @@
       <h3 style="margin-top:16px;">Documents</h3>
       <% if (documents.length === 0) { %><p class="muted" style="font-size:13.5px;">No documents uploaded.</p><% } %>
       <% documents.forEach(doc => { %>
-        <div style="font-size:13.5px; padding:6px 0;"><a href="/documents/<%= doc.id %>/download" style="color:var(--navy); font-weight:600;">📎 <%= doc.originalName %></a> <span class="muted">(<%= doc.uploadedBy %>, <%= new Date(doc.createdAt).toLocaleDateString('en-NG') %>)</span></div>
+        <div style="font-size:13.5px; padding:6px 0; display:flex; align-items:center; gap:6px;"><%- include('partials/icon', {name:'clip', size:14}) %><a href="/documents/<%= doc.id %>/download" style="color:var(--navy); font-weight:600;"><%= doc.originalName %></a> <span class="muted">(<%= doc.uploadedBy %>, <%= new Date(doc.createdAt).toLocaleDateString('en-NG') %>)</span></div>
       <% }) %>
 
       <h3 style="margin-top:20px;">Update Status</h3>

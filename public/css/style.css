@@ -65,6 +65,7 @@ h1,h2,h3,h4 { color: var(--heading); margin: 0; }
 .trust-strip { background: #fff; border-bottom: 1px solid var(--border); padding: 20px 24px; }
 .trust-strip-inner { max-width: 1160px; margin: 0 auto; display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
 .trust-item { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--label); font-weight: 500; }
+.icon { display: inline-block; vertical-align: -3px; flex-shrink: 0; }
 
 /* Order builder */
 .builder-section { padding: 70px 24px; max-width: 1160px; margin: 0 auto; }
