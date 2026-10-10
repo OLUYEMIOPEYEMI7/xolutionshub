@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Order <%= order.reference %> | Admin</title><link rel="stylesheet" href="/css/style.css" /></head>
+<body>
+  <div class="nav">
+    <a href="/" class="brand"><span class="brand-mark">X</span><div><div>XOLUTIONS HUB</div><div class="brand-sub">Admin Dashboard</div></div></a>
+    <div class="nav-links"><a href="/admin" class="navlink">← All Orders</a></div>
+  </div>
+  <div class="dash-wrap">
+    <h1><%= order.reference %></h1>
+    <p class="muted"><%= order.name %> &middot; <%= order.email %> &middot; <%= order.phone || 'No phone' %></p>
+    <p class="muted"><%= order.institution || 'No institution listed' %> &middot; <%= order.level || '—' %></p>
+
+    <div class="dash-order">
+      <span class="status-pill status-<%= order.order_status %>"><%= order.order_status.replace(/_/g, ' ') %></span>
+      <span class="status-pill" style="background:#f1f5f9; color:#475569; margin-left:8px;">Payment: <%= order.payment_status %></span>
+
+      <h3 style="margin-top:16px;">Project</h3>
+      <p><strong>Topic:</strong> <%= order.project_topic || 'Not specified' %></p>
+      <p><strong>Description:</strong> <%= order.project_description || 'None provided' %></p>
+
+      <h3 style="margin-top:16px;">Services</h3>
+      <% (typeof order.items === 'string' ? JSON.parse(order.items) : order.items).forEach(i => { %>
+        <div class="summary-line"><span class="name"><%= i.name %></span><span class="price">₦<%= i.price.toLocaleString('en-NG') %></span></div>
+      <% }) %>
+      <div class="summary-totals">
+        <div class="row"><span>Services</span><span>₦<%= order.services_total.toLocaleString('en-NG') %></span></div>
+        <div class="row"><span>Handling (<%= order.delivery_speed %>)</span><span>₦<%= order.handling_total.toLocaleString('en-NG') %></span></div>
+        <div class="row grand"><span>TOTAL</span><span>₦<%= order.grand_total.toLocaleString('en-NG') %></span></div>
+      </div>
+
+      <h3 style="margin-top:16px;">Documents</h3>
+      <% if (documents.length === 0) { %><p class="muted" style="font-size:13.5px;">No documents uploaded.</p><% } %>
+      <% documents.forEach(doc => { %>
+        <div style="font-size:13.5px; padding:6px 0;"><a href="/documents/<%= doc.id %>/download" style="color:var(--navy); font-weight:600;">📎 <%= doc.originalName %></a> <span class="muted">(<%= doc.uploadedBy %>, <%= new Date(doc.createdAt).toLocaleDateString('en-NG') %>)</span></div>
+      <% }) %>
+
+      <h3 style="margin-top:20px;">Update Status</h3>
+      <form method="POST" action="/admin/orders/<%= order.id %>/status">
+        <div class="form-group">
+          <label>Order Status</label>
+          <select name="orderStatus">
+            <% ['awaiting_payment','in_queue','in_progress','review','completed','cancelled'].forEach(s => { %>
+              <option value="<%= s %>" <%= order.order_status === s ? 'selected' : '' %>><%= s.replace(/_/g, ' ') %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="form-group"><label>Note to Student (optional)</label><textarea name="adminNotes"><%= order.admin_notes || '' %></textarea></div>
+        <button class="btn" type="submit">Update Order</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

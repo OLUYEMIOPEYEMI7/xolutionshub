@@ -1,0 +1,187 @@
+const express = require('express');
+const crypto = require('crypto');
+const { v4: uuidv4 } = require('uuid');
+const bcrypt = require('bcryptjs');
+const multer = require('multer');
+const db = require('../db');
+const services = require('../services');
+const { sendOrderConfirmation } = require('../mailer');
+
+const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 } });
+
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY || '';
+const APP_BASE_URL = process.env.APP_BASE_URL || 'http://localhost:3100';
+
+function genReference() {
+  return 'XH-' + Date.now().toString(36).toUpperCase() + '-' + crypto.randomBytes(3).toString('hex').toUpperCase();
+}
+
+// Recompute pricing server-side from the submitted item keys — never trust client-sent prices.
+function computeOrder(itemKeys, deliverySpeedKey) {
+  const items = (itemKeys || []).map(k => services.findItem(k)).filter(Boolean);
+  const servicesTotal = items.reduce((sum, i) => sum + i.price, 0);
+  const speed = services.findDeliverySpeed(deliverySpeedKey);
+  const handlingTotal = speed.extra;
+  return { items, servicesTotal, handlingTotal, grandTotal: servicesTotal + handlingTotal, speed };
+}
+
+// Submit the order form -> create pending order -> redirect to Paystack
+router.post('/order', async (req, res) => {
+  const { name, email, phone, institution, level, projectTopic, projectDescription, deliverySpeed } = req.body;
+  let itemKeys = req.body.items;
+  if (!itemKeys) itemKeys = [];
+  if (!Array.isArray(itemKeys)) itemKeys = [itemKeys];
+
+  if (!name || !email || itemKeys.length === 0) {
+    return res.render('landing', { services, error: 'Please select at least one service and fill in your name and email.' });
+  }
+
+  const { items, servicesTotal, handlingTotal, grandTotal } = computeOrder(itemKeys, deliverySpeed);
+  if (items.length === 0) {
+    return res.render('landing', { services, error: 'The selected services are not valid. Please try again.' });
+  }
+
+  const reference = genReference();
+  const orderId = uuidv4();
+
+  try {
+    await db.createOrder({
+      id: orderId, reference, name, email: email.toLowerCase(), phone, institution, level,
+      projectTopic, projectDescription, items, deliverySpeed: deliverySpeed || 'normal',
+      servicesTotal, handlingTotal, grandTotal, paymentStatus: 'pending', orderStatus: 'awaiting_payment'
+    });
+
+    if (!PAYSTACK_SECRET_KEY) {
+      return res.render('payment-not-configured', { order: { reference } });
+    }
+
+    const initRes = await fetch('https://api.paystack.co/transaction/initialize', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + PAYSTACK_SECRET_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email.toLowerCase(),
+        amount: grandTotal * 100,
+        currency: 'NGN',
+        callback_url: APP_BASE_URL + '/payment/callback',
+        metadata: { orderId, reference }
+      })
+    });
+    const data = await initRes.json();
+    if (!data.status) {
+      return res.render('landing', { services, error: 'Payment initialization failed: ' + (data.message || 'unknown error') });
+    }
+
+    res.redirect(data.data.authorization_url);
+  } catch (err) {
+    console.error('Order creation failed:', err.message);
+    res.render('landing', { services, error: 'Something went wrong creating your order. Please try again.' });
+  }
+});
+
+router.get('/payment/callback', async (req, res) => {
+  const reference = req.query.reference;
+  if (!reference) return res.redirect('/');
+
+  try {
+    const order = await db.findOrderByReference(reference);
+    if (!order) return res.redirect('/');
+
+    if (!PAYSTACK_SECRET_KEY) return res.redirect('/track?ref=' + reference);
+
+    const verifyRes = await fetch('https://api.paystack.co/transaction/verify/' + reference, {
+      headers: { Authorization: 'Bearer ' + PAYSTACK_SECRET_KEY }
+    });
+    const data = await verifyRes.json();
+
+    if (!(data.status && data.data.status === 'success')) {
+      await db.updateOrderPaymentStatus(reference, 'failed', 'awaiting_payment');
+      return res.render('payment-failed', { order });
+    }
+
+    await db.updateOrderPaymentStatus(reference, 'paid', 'in_queue');
+    sendOrderConfirmation(order).catch(e => console.error('Email send failed:', e.message));
+
+    // Auto-create or reuse a student account tied to this email.
+    let student = await db.findStudentByEmail(order.email);
+    let isNewAccount = false;
+    if (!student) {
+      isNewAccount = true;
+      student = await db.createStudent({
+        id: uuidv4(), name: order.name, email: order.email, phone: order.phone,
+        passwordHash: bcrypt.hashSync(crypto.randomBytes(12).toString('hex'), 10), isAdmin: false
+      });
+    }
+    req.session.justPaid = reference;
+
+    if (isNewAccount) {
+      // New accounts get a random, unknown password — send them to set their own before logging in.
+      return res.redirect('/activate?ref=' + reference);
+    }
+    req.session.studentId = student.id;
+    res.redirect('/dashboard');
+  } catch (err) {
+    console.error('Payment callback error:', err.message);
+    res.redirect('/track?ref=' + reference);
+  }
+});
+
+// Public order tracking (no login required — reference + email)
+router.get('/track', (req, res) => {
+  res.render('track', { order: null, error: null, prefillRef: req.query.ref || '' });
+});
+
+router.post('/track', async (req, res) => {
+  const { reference, email } = req.body;
+  try {
+    const order = await db.findOrderByReference((reference || '').trim());
+    if (!order || order.email.toLowerCase() !== (email || '').trim().toLowerCase()) {
+      return res.render('track', { order: null, error: 'No matching order found. Check your reference and email.', prefillRef: reference || '' });
+    }
+    const documents = await db.documentsForOrder(order.id);
+    res.render('track', { order, documents, error: null, prefillRef: reference });
+  } catch (err) {
+    console.error(err);
+    res.render('track', { order: null, error: 'Something went wrong. Please try again.', prefillRef: reference || '' });
+  }
+});
+
+// Document upload — student must be logged in and own the order
+router.post('/order/:id/documents', upload.single('document'), async (req, res) => {
+  if (!req.session.studentId) return res.redirect('/login');
+  try {
+    const order = await db.findOrderById(req.params.id);
+    if (!order || order.student_id !== req.session.studentId) return res.status(403).send('Not authorized');
+    if (!req.file) return res.redirect('/dashboard');
+
+    await db.addDocument({
+      id: require('uuid').v4(), orderId: order.id, originalName: req.file.originalname,
+      mimetype: req.file.mimetype, data: req.file.buffer, uploadedBy: 'student'
+    });
+    res.redirect('/dashboard');
+  } catch (err) {
+    console.error('Document upload failed:', err.message);
+    res.status(500).send('Upload failed');
+  }
+});
+
+router.get('/documents/:id/download', async (req, res) => {
+  try {
+    const doc = await db.getDocument(req.params.id);
+    if (!doc) return res.status(404).send('Not found');
+    // Only the owning student or an admin may download
+    const order = await db.findOrderById(doc.order_id);
+    const isOwner = req.session.studentId && order && order.student_id === req.session.studentId;
+    const isAdmin = res.locals.currentStudent && res.locals.currentStudent.isAdmin;
+    if (!isOwner && !isAdmin) return res.status(403).send('Not authorized');
+
+    res.set('Content-Type', doc.mimetype || 'application/octet-stream');
+    res.set('Content-Disposition', `attachment; filename="${doc.original_name}"`);
+    res.send(doc.data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Download failed');
+  }
+});
+
+module.exports = router;

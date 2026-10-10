@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>My Dashboard | XOLUTIONS HUB</title><link rel="stylesheet" href="/css/style.css" /></head>
+<body>
+  <div class="nav">
+    <a href="/" class="brand"><span class="brand-mark">X</span><div><div>XOLUTIONS HUB</div><div class="brand-sub">Students &middot; Reports &middot; Solutions</div></div></a>
+    <div class="nav-links">
+      <a href="/" class="navlink">Home</a>
+      <a href="/#builder" class="navlink">Place New Order</a>
+      <form method="POST" action="/logout" style="display:inline;"><button class="btn-outline" type="submit">Logout</button></form>
+    </div>
+  </div>
+  <div class="dash-wrap">
+    <h1>Welcome, <%= student.name %></h1>
+    <% if (justPaid) { %><div style="background:#d1fae5; color:#065f46; padding:14px 18px; border-radius:8px; font-size:14px; margin:18px 0;">✅ Payment confirmed for order <%= justPaid %>. We'll start working on it right away.</div><% } %>
+    <p class="muted">Your orders and their current status.</p>
+
+    <% if (orders.length === 0) { %>
+      <div class="dash-order"><p class="muted center">No orders yet. <a href="/#builder" style="color:var(--orange); font-weight:600;">Place your first order</a>.</p></div>
+    <% } %>
+
+    <% orders.forEach(order => { %>
+      <div class="dash-order">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
+          <div>
+            <h3 style="margin-bottom:4px;"><%= order.reference %></h3>
+            <p class="muted" style="font-size:12.5px; margin:0;"><%= new Date(order.created_at).toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+          </div>
+          <span class="status-pill status-<%= order.order_status %>"><%= order.order_status.replace(/_/g, ' ') %></span>
+        </div>
+        <div style="margin-top:14px;">
+          <% (typeof order.items === 'string' ? JSON.parse(order.items) : order.items).forEach(i => { %>
+            <div class="summary-line"><span class="name"><%= i.name %></span><span class="price">₦<%= i.price.toLocaleString('en-NG') %></span></div>
+          <% }) %>
+        </div>
+        <div class="summary-totals">
+          <div class="row grand"><span>TOTAL</span><span>₦<%= order.grand_total.toLocaleString('en-NG') %></span></div>
+        </div>
+        <% if (order.admin_notes) { %><p class="muted" style="font-size:13.5px; margin-top:10px;"><strong>Note:</strong> <%= order.admin_notes %></p><% } %>
+
+        <h4 style="font-size:13.5px; margin:16px 0 8px;">Documents</h4>
+        <% if (order.documents && order.documents.length > 0) { %>
+          <% order.documents.forEach(doc => { %>
+            <div style="font-size:13px; padding:6px 0;"><a href="/documents/<%= doc.id %>/download" style="color:var(--navy); font-weight:600;">📎 <%= doc.originalName %></a> <span class="muted">(<%= doc.uploadedBy %>)</span></div>
+          <% }) %>
+        <% } else { %>
+          <p class="muted" style="font-size:13px;">No documents uploaded yet.</p>
+        <% } %>
+        <form method="POST" action="/order/<%= order.id %>/documents" enctype="multipart/form-data" style="margin-top:10px; display:flex; gap:8px; align-items:center;">
+          <input type="file" name="document" required style="font-size:12.5px;" />
+          <button class="btn-outline" type="submit" style="font-size:12.5px; padding:8px 14px;">Upload</button>
+        </form>
+      </div>
+    <% }) %>
+  </div>
+</body>
+</html>

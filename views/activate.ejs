@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Activate Your Account | XOLUTIONS HUB</title><link rel="stylesheet" href="/css/style.css" /></head>
+<body>
+  <div class="nav">
+    <a href="/" class="brand"><span class="brand-mark">X</span><div><div>XOLUTIONS HUB</div><div class="brand-sub">Students &middot; Reports &middot; Solutions</div></div></a>
+  </div>
+  <div class="page-wrap">
+    <div class="auth-card">
+      <% if (order) { %>
+        <h1>Payment Successful 🎉</h1>
+        <p class="sub">Order <strong><%= order.reference %></strong> is confirmed. Set a password now so you can log back in to track this order and upload documents.</p>
+        <% if (error) { %><div class="error-banner"><%= error %></div><% } %>
+        <form method="POST" action="/activate">
+          <input type="hidden" name="ref" value="<%= order.reference %>" />
+          <div class="form-group"><label>Create a Password</label><input type="password" name="password" required minlength="6" placeholder="At least 6 characters" /></div>
+          <button class="btn btn-block" type="submit">Set Password &amp; Go to Dashboard</button>
+        </form>
+      <% } else { %>
+        <h1>Link Invalid</h1>
+        <div class="error-banner"><%= error %></div>
+        <a href="/" class="btn btn-block">Back to Home</a>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>

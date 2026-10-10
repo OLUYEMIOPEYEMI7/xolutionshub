@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Track Your Order | XOLUTIONS HUB</title><link rel="stylesheet" href="/css/style.css" /></head>
+<body>
+  <div class="nav">
+    <a href="/" class="brand"><span class="brand-mark">X</span><div><div>XOLUTIONS HUB</div><div class="brand-sub">Students &middot; Reports &middot; Solutions</div></div></a>
+    <div class="nav-links"><a href="/" class="navlink">Home</a><a href="/login" class="navlink">Login</a></div>
+  </div>
+
+  <% if (!order) { %>
+    <div class="page-wrap">
+      <div class="auth-card">
+        <h1>Track Your Order</h1>
+        <p class="sub">Enter your order reference and the email you used to check its status.</p>
+        <% if (error) { %><div class="error-banner"><%= error %></div><% } %>
+        <form method="POST" action="/track">
+          <div class="form-group"><label>Order Reference</label><input type="text" name="reference" required value="<%= prefillRef %>" placeholder="XH-..." /></div>
+          <div class="form-group"><label>Email Address</label><input type="email" name="email" required placeholder="you@example.com" /></div>
+          <button class="btn btn-block" type="submit">Track Order</button>
+        </form>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="dash-wrap">
+      <h1>Order <%= order.reference %></h1>
+      <p class="muted">Placed <%= new Date(order.created_at).toLocaleDateString('en-NG', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+      <div class="dash-order">
+        <span class="status-pill status-<%= order.order_status %>"><%= order.order_status.replace(/_/g, ' ') %></span>
+        <h3 style="margin-top:14px;">Services</h3>
+        <% (typeof order.items === 'string' ? JSON.parse(order.items) : order.items).forEach(i => { %>
+          <div class="summary-line"><span class="name"><%= i.name %></span><span class="price">₦<%= i.price.toLocaleString('en-NG') %></span></div>
+        <% }) %>
+        <div class="summary-totals">
+          <div class="row"><span>Services</span><span>₦<%= order.services_total.toLocaleString('en-NG') %></span></div>
+          <div class="row"><span>Handling</span><span>₦<%= order.handling_total.toLocaleString('en-NG') %></span></div>
+          <div class="row grand"><span>TOTAL</span><span>₦<%= order.grand_total.toLocaleString('en-NG') %></span></div>
+        </div>
+        <% if (order.admin_notes) { %><p class="muted" style="margin-top:14px; font-size:13.5px;"><strong>Note from the team:</strong> <%= order.admin_notes %></p><% } %>
+      </div>
+      <p class="muted" style="font-size:13px;">Need to upload a document or message us? WhatsApp: <a href="https://wa.me/2349041372994" style="color:var(--orange); font-weight:600;">0904 137 2994</a>, or <a href="/login" style="color:var(--navy); font-weight:600;">log in to your dashboard</a>.</p>
+    </div>
+  <% } %>
+</body>
+</html>
