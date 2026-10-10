@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><%- include('partials/head', { pageTitle: 'Privacy Policy | XOLUTIONS HUB', pageDescription: 'Privacy Policy for XOLUTIONS HUB.' }) %></head>
+<body>
+  <%- include('partials/nav') %>
+  <main class="container" style="max-width:760px; padding:50px 24px;">
+    <h1>Privacy Policy</h1>
+    <p class="muted" style="margin-bottom:28px;">Last updated: <%= new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+
+    <h2>1. Information We Collect</h2>
+    <p class="muted">When you place an order, we collect your name, email address, phone number, institution, project details, and any documents you choose to upload. We do not collect or store your payment card details — these are handled entirely by Paystack.</p>
+
+    <h2>2. How We Use Your Information</h2>
+    <p class="muted">We use your information solely to process and fulfil your order, communicate with you about its status, and provide support. We do not sell or share your personal information with third parties for marketing purposes.</p>
+
+    <h2>3. Document Storage</h2>
+    <p class="muted">Uploaded documents are stored securely and are only accessible to you (via your logged-in dashboard) and authorised XOLUTIONS HUB staff.</p>
+
+    <h2>4. Data Retention</h2>
+    <p class="muted">We retain order and account information for as long as needed to provide our services and meet reasonable record-keeping needs.</p>
+
+    <h2>5. Your Rights</h2>
+    <p class="muted">You can request a copy of the information we hold about you, or request deletion of your account and data, by contacting us at <a href="mailto:xolutionshub@gmail.com" style="color:var(--navy); font-weight:600;">xolutionshub@gmail.com</a>.</p>
+
+    <h2>6. Third-Party Services</h2>
+    <p class="muted">We use Paystack for payment processing and Gmail for transactional email. These providers have their own privacy policies governing the data they process on our behalf.</p>
+
+    <h2>7. Contact</h2>
+    <p class="muted">Questions about this policy can be sent to <a href="mailto:xolutionshub@gmail.com" style="color:var(--navy); font-weight:600;">xolutionshub@gmail.com</a> or WhatsApp <a href="https://wa.me/2349041372994" style="color:var(--orange); font-weight:600;">0904 137 2994</a>.</p>
+
+    <p class="muted" style="margin-top:32px; font-size:12.5px; font-style:italic;">This is a baseline privacy policy intended as a starting point. We recommend formal legal review before relying on it for compliance purposes.</p>
+  </main>
+  <footer class="site-footer">
+    <p style="margin-top:0; font-size:12.5px;"><a href="/" style="color:#fff;">Home</a> &middot; <a href="/terms">Terms of Service</a></p>
+    <p style="margin-top:14px; font-size:11.5px; color:#9ca3c4;">&copy; <%= new Date().getFullYear() %> XOLUTIONS HUB. All rights reserved.</p>
+  </footer>
+</body>
+</html>

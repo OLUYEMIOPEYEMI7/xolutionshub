@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Admin | XOLUTIONS HUB</title><link rel="stylesheet" href="/css/style.css" /></head>
+<head><%- include('partials/head', { pageTitle: 'Admin | XOLUTIONS HUB', pageDescription: 'Admin order management.', noindex: true }) %></head>
 <body>
-  <div class="nav">
-    <a href="/" class="brand"><span class="brand-mark">X</span><div><div>XOLUTIONS HUB</div><div class="brand-sub">Admin Dashboard</div></div></a>
-    <div class="nav-links"><a href="/" class="navlink">Site</a><form method="POST" action="/logout" style="display:inline;"><button class="btn-outline" type="submit">Logout</button></form></div>
-  </div>
-  <div style="max-width:1160px; margin:40px auto; padding:0 24px;">
+  <%- include('partials/nav') %>
+  <main style="max-width:1160px; margin:40px auto; padding:0 24px;">
     <h1>All Orders (<%= orders.length %>)</h1>
     <table class="admin-table" style="margin-top:20px;">
       <thead><tr><th>Reference</th><th>Name</th><th>Email</th><th>Total</th><th>Payment</th><th>Status</th><th>Placed</th><th></th></tr></thead>
@@ -25,6 +22,6 @@
         <% }) %>
       </tbody>
     </table>
-  </div>
+  </main>
 </body>
 </html>

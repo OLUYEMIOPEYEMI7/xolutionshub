@@ -1,11 +1,18 @@
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
+const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 const path = require('path');
 const db = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3100;
+const isProd = process.env.NODE_ENV === 'production' || !!process.env.RENDER;
+
+// Render (and most PaaS) sit behind a reverse proxy — required for secure cookies
+// and correct req.secure / X-Forwarded-Proto detection.
+app.set('trust proxy', 1);
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -16,8 +23,39 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'xh-dev-secret-change-me',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 * 24 * 30 } // 30 days
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+    secure: isProd,
+    sameSite: 'lax',
+    httpOnly: true
+  }
 }));
+
+// Lightweight CSRF protection: a per-session token embedded in every form,
+// verified on every state-changing POST. No external dependency needed.
+app.use((req, res, next) => {
+  if (!req.session.csrfToken) req.session.csrfToken = crypto.randomBytes(24).toString('hex');
+  res.locals.csrfToken = req.session.csrfToken;
+  next();
+});
+app.use((req, res, next) => {
+  if (req.method !== 'POST') return next();
+  // Multipart routes (file uploads) parse their own body via multer inside the route
+  // handler, which runs after this middleware — so req.body isn't populated yet here.
+  // Those routes verify the CSRF token themselves, after multer has run.
+  if (req.is('multipart/form-data')) return next();
+  const submitted = req.body._csrf;
+  if (!submitted || submitted !== req.session.csrfToken) {
+    return res.status(403).send('Your session expired or this form was submitted incorrectly. Please go back and try again.');
+  }
+  next();
+});
+
+// Basic abuse protection on the two endpoints most worth rate-limiting.
+const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false, message: 'Too many login attempts. Please try again in a few minutes.' });
+const orderLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false, message: 'Too many orders submitted. Please try again later or WhatsApp us directly.' });
+app.use('/login', loginLimiter);
+app.use('/order', orderLimiter);
 
 // Attach current student (if logged in) to every request
 app.use(async (req, res, next) => {

@@ -1,23 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Login | XOLUTIONS HUB</title><link rel="stylesheet" href="/css/style.css" /></head>
+<head><%- include('partials/head', { pageTitle: 'Login | XOLUTIONS HUB', pageDescription: 'Log in to your XOLUTIONS HUB account to track orders and upload documents.', noindex: true }) %></head>
 <body>
-  <div class="nav">
-    <a href="/" class="brand"><span class="brand-mark">X</span><div><div>XOLUTIONS HUB</div><div class="brand-sub">Students &middot; Reports &middot; Solutions</div></div></a>
-    <div class="nav-links"><a href="/" class="navlink">Home</a></div>
-  </div>
-  <div class="page-wrap">
+  <%- include('partials/nav') %>
+  <main class="page-wrap">
     <div class="auth-card">
       <h1>Welcome Back</h1>
       <p class="sub">Log in to view your orders and upload documents. (Your account was created automatically when you placed your first order.)</p>
       <% if (error) { %><div class="error-banner"><%= error %></div><% } %>
       <form method="POST" action="/login">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
         <div class="form-group"><label>Email Address</label><input type="email" name="email" required placeholder="you@example.com" /></div>
         <div class="form-group"><label>Password</label><input type="password" name="password" required placeholder="••••••••" /></div>
         <button class="btn btn-block" type="submit">Log In</button>
       </form>
       <p class="muted" style="font-size:13px; margin-top:18px; text-align:center;">Forgot your password or never set one? WhatsApp us: <a href="https://wa.me/2349041372994" style="color:var(--orange); font-weight:600;">0904 137 2994</a></p>
     </div>
-  </div>
+  </main>
 </body>
 </html>

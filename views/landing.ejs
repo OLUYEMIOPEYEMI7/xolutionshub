@@ -1,27 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>XOLUTIONS HUB — Professional Project Support for Nigerian Undergraduates</title>
-  <link rel="stylesheet" href="/css/style.css" />
+  <%- include('partials/head', { pageTitle: 'XOLUTIONS HUB — Professional Project Support for Nigerian Undergraduates', pageDescription: 'Build a project support package from topic development to defence preparation. Transparent pricing, secure Paystack payment, live order tracking, confidential document handling.', canonicalUrl: (process.env.APP_BASE_URL || 'https://xolutionshub.onrender.com') + '/' }) %>
 </head>
 <body>
-  <div class="nav">
-    <a href="/" class="brand"><span class="brand-mark">X</span><div><div>XOLUTIONS HUB</div><div class="brand-sub">Students &middot; Reports &middot; Solutions</div></div></a>
-    <div class="nav-links">
-      <a href="#builder" class="navlink">Services</a>
-      <a href="/track" class="navlink">Track Order</a>
-      <% if (currentStudent) { %>
-        <a href="<%= currentStudent.isAdmin ? '/admin' : '/dashboard' %>" class="navlink">Dashboard</a>
-        <form method="POST" action="/logout" style="display:inline;"><button class="btn-outline" type="submit">Logout</button></form>
-      <% } else { %>
-        <a href="/login" class="navlink">Login</a>
-        <a href="#builder" class="btn">Start Your Order</a>
-      <% } %>
-    </div>
-  </div>
+  <%- include('partials/nav') %>
 
+  <main>
   <section class="hero">
     <div class="hero-inner">
       <div>
@@ -36,7 +21,7 @@
         </div>
       </div>
       <div class="hero-steps">
-        <h4>How it works</h4>
+        <h2 style="font-size:13px; text-transform:uppercase; letter-spacing:0.5px; color:var(--body-text); margin-bottom:16px; font-weight:700;">How it works</h2>
         <div class="hero-step"><span class="hero-step-num">1</span><span>Select the exact services you need</span></div>
         <div class="hero-step"><span class="hero-step-num">2</span><span>Tell us about your project</span></div>
         <div class="hero-step"><span class="hero-step-num">3</span><span>Review the exact price — no surprises</span></div>
@@ -63,6 +48,7 @@
     <% if (typeof error !== 'undefined' && error) { %><div class="error-banner" style="max-width:760px; margin:0 auto 24px;"><%= error %></div><% } %>
 
     <form method="POST" action="/order" id="order-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
       <div class="builder-grid">
         <div>
           <% services.categories.forEach(cat => { %>
@@ -111,8 +97,8 @@
               <div class="form-group"><label>Institution</label><input type="text" name="institution" placeholder="e.g. University of Lagos" /></div>
             </div>
             <div class="form-row">
-              <div class="form-group"><label>Level</label>
-                <select name="level">
+              <div class="form-group"><label for="level-select">Level</label>
+                <select name="level" id="level-select">
                   <option value="">Select level</option>
                   <option value="ND/HND">ND / HND</option>
                   <option value="100L">100 Level</option>
@@ -156,19 +142,57 @@
       <p class="muted">Built for clarity, speed, and trust — every step of the way.</p>
     </div>
     <div class="process-grid">
-      <div class="process-card"><div class="process-num">1</div><h4>Transparent Pricing</h4><p>Every service is priced individually — pick only what you need, see the exact total before you pay.</p></div>
-      <div class="process-card"><div class="process-num">2</div><h4>Secure Payment</h4><p>All payments are processed securely through Paystack — cards, bank transfer, and USSD accepted.</p></div>
-      <div class="process-card"><div class="process-num">3</div><h4>Real-Time Tracking</h4><p>Track every order from submission to delivery with a reference number and live status updates.</p></div>
-      <div class="process-card"><div class="process-num">4</div><h4>Confidential & Secure</h4><p>Your documents and project details are handled with strict confidentiality throughout.</p></div>
+      <div class="process-card"><div class="process-num">1</div><h3>Transparent Pricing</h3><p>Every service is priced individually — pick only what you need, see the exact total before you pay.</p></div>
+      <div class="process-card"><div class="process-num">2</div><h3>Secure Payment</h3><p>All payments are processed securely through Paystack — cards, bank transfer, and USSD accepted.</p></div>
+      <div class="process-card"><div class="process-num">3</div><h3>Real-Time Tracking</h3><p>Track every order from submission to delivery with a reference number and live status updates.</p></div>
+      <div class="process-card"><div class="process-num">4</div><h3>Confidential & Secure</h3><p>Your documents and project details are handled with strict confidentiality throughout.</p></div>
     </div>
   </section>
+
+  <section class="builder-section" id="faq" style="padding-top:20px;">
+    <div class="builder-head">
+      <h2>Frequently Asked Questions</h2>
+    </div>
+    <div style="max-width:760px; margin:0 auto;">
+      <details class="faq-item">
+        <summary>How does pricing work?</summary>
+        <p>Every service has a fixed, published price shown on this page. Select what you need, and the total updates instantly — there are no hidden fees beyond the delivery speed you choose.</p>
+      </details>
+      <details class="faq-item">
+        <summary>How do I pay?</summary>
+        <p>Payment is handled securely through Paystack, supporting cards, bank transfer, and USSD. You'll be redirected to Paystack's secure checkout immediately after submitting your order.</p>
+      </details>
+      <details class="faq-item">
+        <summary>What happens after I submit my order?</summary>
+        <p>You'll receive a unique order reference and a confirmation email. Your order enters our queue, and you can track its status anytime using your reference and email at <a href="/track" style="color:var(--navy); font-weight:600;">/track</a>, or from your dashboard if you're logged in.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Can I upload supporting documents?</summary>
+        <p>Yes — once your order is placed, log in to your dashboard to upload any relevant files (PDF, Word, Excel, PowerPoint, images, or ZIP, up to 15MB each).</p>
+      </details>
+      <details class="faq-item">
+        <summary>What's your revision and refund policy?</summary>
+        <p>Specific revision and refund terms depend on the service and are confirmed with you directly — WhatsApp us at <a href="https://wa.me/2349041372994" style="color:var(--orange); font-weight:600;">0904 137 2994</a> before or after ordering if you have questions about a specific case.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Is my information kept confidential?</summary>
+        <p>Yes. Your project details and uploaded documents are only accessible to you and our team, and are never shared with third parties. See our <a href="/privacy" style="color:var(--navy); font-weight:600;">Privacy Policy</a> for details.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Do you guarantee specific grades or outcomes?</summary>
+        <p>No. We provide structured support, guidance, and deliverables based on your requirements — we don't control or guarantee academic grading, approval, or publication outcomes.</p>
+      </details>
+    </div>
+  </section>
+
+  </main>
 
   <footer class="site-footer">
     <p><strong style="color:#fff;">XOLUTIONS HUB</strong> &middot; Your Success, Our Priority.</p>
     <p>WhatsApp: <a href="https://wa.me/2349041372994">0904 137 2994</a> &middot; <a href="mailto:xolutionshub@gmail.com">xolutionshub@gmail.com</a></p>
-    <p style="margin-top:14px; font-size:11.5px; opacity:0.6;">&copy; <%= new Date().getFullYear() %> XOLUTIONS HUB. All rights reserved.</p>
+    <p style="margin-top:10px; font-size:12.5px;"><a href="/terms">Terms of Service</a> &middot; <a href="/privacy">Privacy Policy</a></p>
+    <p style="margin-top:14px; font-size:11.5px; color:#9ca3c4;">&copy; <%= new Date().getFullYear() %> XOLUTIONS HUB. All rights reserved.</p>
   </footer>
-
   <script>
     function money(n) { return '₦' + Number(n).toLocaleString('en-NG'); }
     let selectedSpeed = { key: '<%= services.deliverySpeeds[0].key %>', extra: 0 };

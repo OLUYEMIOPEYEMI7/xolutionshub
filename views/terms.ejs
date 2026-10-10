@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><%- include('partials/head', { pageTitle: 'Terms of Service | XOLUTIONS HUB', pageDescription: 'Terms of Service for XOLUTIONS HUB project support services.' }) %></head>
+<body>
+  <%- include('partials/nav') %>
+  <main class="container" style="max-width:760px; padding:50px 24px;">
+    <h1>Terms of Service</h1>
+    <p class="muted" style="margin-bottom:28px;">Last updated: <%= new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+
+    <h2>1. Our Services</h2>
+    <p class="muted">XOLUTIONS HUB provides project and research support services, including but not limited to topic development, chapter writing support, data analysis, questionnaire development, formatting, proofreading, and presentation preparation, as described on our services page.</p>
+
+    <h2>2. Orders and Pricing</h2>
+    <p class="muted">All prices are shown in Nigerian Naira (₦) and are confirmed at the point of order. We reserve the right to update prices for future orders; this does not affect orders already placed and paid for.</p>
+
+    <h2>3. Payment</h2>
+    <p class="muted">Payment is processed securely through Paystack. An order is only confirmed once payment has been successfully completed and verified.</p>
+
+    <h2>4. No Guarantee of Academic Outcomes</h2>
+    <p class="muted">We provide structured support, guidance, and deliverables based on your stated requirements. We do not guarantee specific grades, academic approval, publication, or any outcome controlled by a third party (e.g. your institution or supervisor).</p>
+
+    <h2>5. Client Responsibilities</h2>
+    <p class="muted">You are responsible for providing accurate project information and for using delivered work in accordance with your institution's academic integrity policies.</p>
+
+    <h2>6. Revisions and Refunds</h2>
+    <p class="muted">Revision and refund terms vary by service and situation. Please contact us via WhatsApp before or after ordering to discuss specifics for your case.</p>
+
+    <h2>7. Confidentiality</h2>
+    <p class="muted">Your project details and uploaded documents are kept confidential and are only used to fulfil your order. See our <a href="/privacy" style="color:var(--navy); font-weight:600;">Privacy Policy</a> for more detail.</p>
+
+    <h2>8. Contact</h2>
+    <p class="muted">Questions about these terms can be sent to <a href="mailto:xolutionshub@gmail.com" style="color:var(--navy); font-weight:600;">xolutionshub@gmail.com</a> or WhatsApp <a href="https://wa.me/2349041372994" style="color:var(--orange); font-weight:600;">0904 137 2994</a>.</p>
+
+    <p class="muted" style="margin-top:32px; font-size:12.5px; font-style:italic;">This is a baseline terms document intended as a starting point. We recommend formal legal review before relying on it for dispute resolution.</p>
+  </main>
+  <footer class="site-footer">
+    <p style="margin-top:0; font-size:12.5px;"><a href="/" style="color:#fff;">Home</a> &middot; <a href="/privacy">Privacy Policy</a></p>
+    <p style="margin-top:14px; font-size:11.5px; color:#9ca3c4;">&copy; <%= new Date().getFullYear() %> XOLUTIONS HUB. All rights reserved.</p>
+  </footer>
+</body>
+</html>

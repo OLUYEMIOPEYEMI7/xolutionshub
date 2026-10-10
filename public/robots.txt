@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /login
+Disallow: /activate
+Disallow: /order/
+
+Sitemap: https://xolutionshub.onrender.com/sitemap.xml

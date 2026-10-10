@@ -8,7 +8,30 @@ const services = require('../services');
 const { sendOrderConfirmation } = require('../mailer');
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 } });
+const ALLOWED_DOC_TYPES = new Set([
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'text/plain',
+  'image/jpeg',
+  'image/png',
+  'application/zip',
+  'application/x-zip-compressed'
+]);
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 15 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!ALLOWED_DOC_TYPES.has(file.mimetype)) {
+      return cb(new Error('That file type isn\'t supported. Please upload a PDF, Word, Excel, PowerPoint, image, text, or ZIP file.'));
+    }
+    cb(null, true);
+  }
+});
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY || '';
 const APP_BASE_URL = process.env.APP_BASE_URL || 'http://localhost:3100';
@@ -147,8 +170,17 @@ router.post('/track', async (req, res) => {
 });
 
 // Document upload — student must be logged in and own the order
-router.post('/order/:id/documents', upload.single('document'), async (req, res) => {
+router.post('/order/:id/documents', (req, res, next) => {
+  upload.single('document')(req, res, (err) => {
+    if (err) return res.status(400).send(err.message || 'Upload failed. Please check the file and try again.');
+    next();
+  });
+}, async (req, res) => {
   if (!req.session.studentId) return res.redirect('/login');
+  // Multipart requests skip the global CSRF middleware (req.body isn't parsed yet there) — verify here instead.
+  if (!req.body._csrf || req.body._csrf !== req.session.csrfToken) {
+    return res.status(403).send('Your session expired. Please refresh the page and try again.');
+  }
   try {
     const order = await db.findOrderById(req.params.id);
     if (!order || order.student_id !== req.session.studentId) return res.status(403).send('Not authorized');
