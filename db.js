@@ -67,6 +67,9 @@ module.exports = {
   async linkOrderToStudent(orderId, studentId) {
     await query('UPDATE xh_orders SET student_id = $1, updated_at = NOW() WHERE id = $2', [studentId, orderId]);
   },
+  async setStudentAdmin(id) {
+    await query('UPDATE xh_students SET is_admin = TRUE WHERE id = $1', [id]);
+  },
   async setStudentPassword(id, passwordHash) {
     await query('UPDATE xh_students SET password_hash = $1 WHERE id = $2', [passwordHash, id]);
   },

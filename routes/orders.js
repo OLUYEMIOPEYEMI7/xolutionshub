@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 const db = require('../db');
 const services = require('../services');
-const { sendOrderReceived } = require('../mailer');
+const { sendOrderReceived, sendNewOrderAlert } = require('../mailer');
 
 const router = express.Router();
 const ALLOWED_DOC_TYPES = new Set([
@@ -71,6 +71,7 @@ router.post('/order', async (req, res) => {
       servicesTotal, handlingTotal, grandTotal, paymentStatus: 'pending', orderStatus: 'awaiting_payment'
     });
     sendOrderReceived(order).catch(e => console.error('Email send failed:', e.message));
+    sendNewOrderAlert(order).catch(e => console.error('Order alert email failed:', e.message));
 
     // Post/Redirect/Get: a refresh can't resubmit the order. Only this browser session
     // may view the payment page for this reference.

@@ -5,6 +5,9 @@ module.exports = {
   whatsappIntl: '2348069126742',
   whatsappDisplay: '0806 912 6742',
   email: 'xolutionshub@gmail.com',
+  // Who gets an email for every new order. Override with ORDER_ALERT_EMAILS (comma-separated).
+  orderAlertEmails: (process.env.ORDER_ALERT_EMAILS || 'xolutionshub@gmail.com,oluyemiopeyemi726@gmail.com')
+    .split(',').map(s => s.trim()).filter(Boolean),
   bank: {
     name: process.env.BANK_NAME || '',
     accountName: process.env.BANK_ACCOUNT_NAME || '',

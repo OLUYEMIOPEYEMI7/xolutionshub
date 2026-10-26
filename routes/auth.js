@@ -2,6 +2,8 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
 const { UNACTIVATED_PREFIX } = require('./admin');
+const { sendPasswordReset } = require('../mailer');
+const resetTokens = require('../passwordReset');
 const router = express.Router();
 
 router.get('/login', (req, res) => {
@@ -25,6 +27,73 @@ router.post('/login', async (req, res) => {
 
 router.post('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/'));
+});
+
+// Forgot / set password by email. Always answers the same way so the form can't be
+// used to discover which emails have accounts.
+const RESET_SENT = 'If an account exists for that email, we\'ve sent a link to set a new password. It expires in 1 hour. Check your spam folder too.';
+const RESET_INVALID = 'This link is invalid, has expired, or has already been used. Request a new one below.';
+
+router.get('/forgot-password', (req, res) => {
+  res.render('forgot-password', { error: null, sent: false });
+});
+
+router.post('/forgot-password', async (req, res) => {
+  const email = (req.body.email || '').trim().toLowerCase();
+  if (!email) return res.render('forgot-password', { error: 'Enter your email address.', sent: false });
+  try {
+    const student = await db.findStudentByEmail(email);
+    if (student) {
+      const base = process.env.APP_BASE_URL || 'https://xolutionshub.onrender.com';
+      const url = base + '/reset-password?token=' + encodeURIComponent(resetTokens.createToken(student));
+      sendPasswordReset(student.email, url).catch(e => console.error('Reset email failed:', e.message));
+    }
+    res.render('forgot-password', { error: null, sent: true });
+  } catch (err) {
+    console.error(err);
+    res.render('forgot-password', { error: 'Something went wrong. Please try again.', sent: false });
+  }
+});
+
+async function resetTarget(token) {
+  const parsed = resetTokens.readToken(token);
+  if (!parsed) return null;
+  const student = await db.findStudentByEmail(parsed.email);
+  return resetTokens.verifyToken(parsed, student) ? student : null;
+}
+
+router.get('/reset-password', async (req, res) => {
+  try {
+    const student = await resetTarget(req.query.token);
+    if (!student) return res.status(400).render('forgot-password', { error: RESET_INVALID, sent: false });
+    res.render('reset-password', { token: req.query.token, email: student.email, error: null });
+  } catch (err) {
+    console.error(err);
+    res.status(500).render('forgot-password', { error: 'Something went wrong. Please try again.', sent: false });
+  }
+});
+
+router.post('/reset-password', async (req, res) => {
+  const { token, password, confirm } = req.body;
+  try {
+    const student = await resetTarget(token);
+    if (!student) return res.status(400).render('forgot-password', { error: RESET_INVALID, sent: false });
+    if (!password || password.length < 8) {
+      return res.render('reset-password', { token, email: student.email, error: 'Use at least 8 characters.' });
+    }
+    if (password !== confirm) {
+      return res.render('reset-password', { token, email: student.email, error: 'The two passwords don\'t match.' });
+    }
+    await db.setStudentPassword(student.id, bcrypt.hashSync(password, 10));
+    req.session.regenerate(err => {
+      if (err) return res.redirect('/login');
+      req.session.studentId = student.id;
+      res.redirect(student.isAdmin ? '/admin' : '/dashboard');
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).render('forgot-password', { error: 'Something went wrong. Please try again.', sent: false });
+  }
 });
 
 // Set a password for an account created when an admin confirmed a payment.
