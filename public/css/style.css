@@ -79,8 +79,8 @@ main:focus, [tabindex="-1"]:focus { outline: none; }
 .btn-ghost:hover { background: rgba(255,255,255,.1); color: #fff; box-shadow: none; }
 .btn-outline { background: transparent; border-color: var(--ink); color: var(--ink); }
 .btn-outline:hover { background: var(--ink); color: #fff; box-shadow: none; }
-.btn-whatsapp { background: #1fa855; color: #fff; }
-.btn-whatsapp:hover { background: #178a45; color: #fff; }
+.btn-whatsapp { background: #0f7a3d; color: #fff; }
+.btn-whatsapp:hover { background: #0b6332; color: #fff; }
 .icon { display: inline-block; vertical-align: -3px; flex-shrink: 0; }
 
 /* Reveal on scroll (only when JS has marked <html class="js">) */
@@ -334,3 +334,24 @@ main:focus, [tabindex="-1"]:focus { outline: none; }
   .js .reveal { opacity: 1; transform: none; }
 }
 @media print { .nav-shell, .mbar, .site-footer { display: none; } }
+
+/* Bank-transfer payment steps */
+.pay-steps { counter-reset: pay; display: grid; gap: var(--s5); margin-top: var(--s5); }
+.pay-steps > li { counter-increment: pay; position: relative; padding-left: 2.75rem; }
+.pay-steps > li::before { content: counter(pay); position: absolute; left: 0; top: 0; width: 2rem; height: 2rem; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: .9rem; }
+.pay-steps h2, .pay-steps h3 { font-family: var(--font-body); font-size: 1.05rem; font-weight: 800; margin: .3rem 0 var(--s2); }
+.pay-steps p { color: var(--text-2); }
+.bank { display: grid; gap: 0; margin: 0; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--paper); }
+.bank > div { display: flex; justify-content: space-between; align-items: center; gap: var(--s3); padding: var(--s3) var(--s4); border-bottom: 1px dashed var(--line); flex-wrap: wrap; }
+.bank > div:last-child { border-bottom: 0; }
+.bank dt { font-size: .82rem; color: var(--text-3); font-weight: 700; }
+.bank dd { margin: 0; font-weight: 800; color: var(--ink); display: inline-flex; align-items: center; gap: var(--s2); overflow-wrap: anywhere; }
+.mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: .02em; }
+.copy-btn { flex-shrink: 0; white-space: nowrap; min-height: 32px; padding: .2rem .65rem; border: 1.5px solid var(--ink); border-radius: var(--r-sm); background: transparent; font-size: .78rem; font-weight: 800; cursor: pointer; color: var(--ink); transition: background var(--t-fast), color var(--t-fast); }
+.copy-btn:hover { background: var(--ink); color: #fff; }
+.copy-btn.is-done { background: var(--ok-bg); color: var(--ok-fg); border-color: var(--ok-fg); }
+.inline-select { min-height: 40px; padding: .4rem .7rem; border: 2px solid rgba(12,19,71,.4); border-radius: var(--r-sm); background: var(--card); }
+details.order-card > summary { list-style: none; }
+details.order-card > summary::-webkit-details-marker { display: none; }
+details.order-card > summary::after { content: " +"; color: var(--rust); }
+details.order-card[open] > summary::after { content: " −"; }

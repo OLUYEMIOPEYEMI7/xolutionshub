@@ -10,6 +10,25 @@
       <p class="muted" style="margin:0;"><%= order.name %> &middot; <%= order.email %> &middot; <%= order.phone || 'No phone' %></p>
       <p class="muted"><%= order.institution || 'No institution listed' %> &middot; <%= order.level || '—' %></p>
 
+      <% if (flash === 'paid') { %><div class="alert alert--ok" role="status">Payment confirmed. The order is in the queue, the student's account is linked, and a confirmation email was sent (if email is configured).</div><% } %>
+      <% if (flash === 'payment') { %><div class="alert alert--info" role="status">Payment status updated.</div><% } %>
+
+      <div class="order-card">
+        <h2 class="section-label" style="margin-top:0;">Payment (bank transfer)</h2>
+        <p style="margin-bottom:var(--s3);">Expected amount <strong>₦<%= order.grand_total.toLocaleString('en-NG') %></strong> with narration <strong class="mono"><%= order.reference %></strong>. Check the receipt sent on WhatsApp against your bank statement before confirming.</p>
+        <form method="POST" action="/admin/orders/<%= order.id %>/payment" class="upload-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <label for="payment-status-select" class="sr-only">Payment status</label>
+          <select name="paymentStatus" id="payment-status-select" class="inline-select">
+            <% ['pending','paid','failed'].forEach(s => { %>
+              <option value="<%= s %>" <%= order.payment_status === s ? 'selected' : '' %>><%= s === 'paid' ? 'paid (confirmed received)' : s %></option>
+            <% }) %>
+          </select>
+          <button class="btn btn-sm" type="submit">Save payment status</button>
+        </form>
+        <p class="hint">Setting it to paid for the first time moves a waiting order into the queue, creates or links the student account, and emails them.</p>
+      </div>
+
       <div class="order-card">
         <span class="status-pill status-<%= order.order_status %>"><%= order.order_status.replace(/_/g, ' ') %></span>
         <span class="status-pill pill-neutral" style="margin-left:var(--s2);">Payment: <%= order.payment_status %></span>

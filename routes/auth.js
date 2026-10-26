@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
+const { UNACTIVATED_PREFIX } = require('./admin');
 const router = express.Router();
 
 router.get('/login', (req, res) => {
@@ -26,15 +27,23 @@ router.post('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/'));
 });
 
-// Set a password for a newly auto-created account (right after a first successful order).
+// Set a password for an account created when an admin confirmed a payment.
+// Works once per account: only while it still carries the "unactivated" marker.
+const INVALID_LINK = 'This activation link is invalid, already used, or payment has not been confirmed yet.';
+
+async function activationTarget(ref) {
+  const order = ref ? await db.findOrderByReference(ref) : null;
+  if (!order || order.payment_status !== 'paid') return null;
+  const student = await db.findStudentByEmail(order.email);
+  if (!student || !(student.passwordHash || '').startsWith(UNACTIVATED_PREFIX)) return null;
+  return { order, student };
+}
+
 router.get('/activate', async (req, res) => {
-  const ref = req.query.ref;
   try {
-    const order = await db.findOrderByReference(ref);
-    if (!order || order.payment_status !== 'paid') {
-      return res.status(400).render('activate', { error: 'This activation link is invalid or payment has not completed.', order: null });
-    }
-    res.render('activate', { error: null, order });
+    const t = await activationTarget(req.query.ref);
+    if (!t) return res.status(400).render('activate', { error: INVALID_LINK, order: null });
+    res.render('activate', { error: null, order: t.order });
   } catch (err) {
     console.error(err);
     res.status(500).render('activate', { error: 'Something went wrong. Please try again.', order: null });
@@ -42,20 +51,18 @@ router.get('/activate', async (req, res) => {
 });
 
 router.post('/activate', async (req, res) => {
-  const { ref, password } = req.body;
+  const { ref, email, password } = req.body;
   try {
-    const order = await db.findOrderByReference(ref);
-    if (!order || order.payment_status !== 'paid') {
-      return res.status(400).render('activate', { error: 'This activation link is invalid or payment has not completed.', order: null });
+    const t = await activationTarget(ref);
+    if (!t) return res.status(400).render('activate', { error: INVALID_LINK, order: null });
+    if ((email || '').trim().toLowerCase() !== t.order.email.toLowerCase()) {
+      return res.render('activate', { error: 'That email doesn\'t match this order.', order: t.order });
     }
     if (!password || password.length < 6) {
-      return res.render('activate', { error: 'Password must be at least 6 characters.', order });
+      return res.render('activate', { error: 'Password must be at least 6 characters.', order: t.order });
     }
-    const student = await db.findStudentByEmail(order.email);
-    if (!student) return res.status(400).render('activate', { error: 'Account not found.', order: null });
-
-    await db.query('UPDATE xh_students SET password_hash = $1 WHERE id = $2', [bcrypt.hashSync(password, 10), student.id]);
-    req.session.studentId = student.id;
+    await db.setStudentPassword(t.student.id, bcrypt.hashSync(password, 10));
+    req.session.studentId = t.student.id;
     res.redirect('/dashboard');
   } catch (err) {
     console.error(err);
