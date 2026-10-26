@@ -63,7 +63,28 @@ function layout(order, heading, introHtml, extraHtml) {
   </div>`;
 }
 
+// Render's free plan blocks outgoing SMTP (ports 25/465/587), so when MAIL_RELAY_URL is
+// set, mail goes over HTTPS to a Google Apps Script web app (scripts/gmail-relay.gs) that
+// sends it from the Gmail account. Otherwise fall back to Gmail SMTP (paid plans, local).
+async function sendViaRelay(to, subject, html) {
+  const res = await fetch(process.env.MAIL_RELAY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ secret: process.env.MAIL_RELAY_SECRET, to, subject, html, replyTo: site.email, name: 'XOLUTIONS HUB' }),
+    redirect: 'follow', // Apps Script answers with a redirect to the result
+    signal: AbortSignal.timeout(20000)
+  });
+  const text = await res.text();
+  let data = null;
+  try { data = JSON.parse(text); } catch { /* not JSON: usually an Apps Script error page */ }
+  if (!res.ok || !data || data.ok !== true) {
+    throw new Error('Mail relay failed (HTTP ' + res.status + '): ' + ((data && data.error) || text.slice(0, 120)));
+  }
+  return { skipped: false, messageId: 'relay' };
+}
+
 async function send(to, subject, html) {
+  if (process.env.MAIL_RELAY_URL && process.env.MAIL_RELAY_SECRET) return sendViaRelay(to, subject, html);
   const t = getTransporter();
   if (!t) { console.warn('Mailer not configured — skipping email to', to); return { skipped: true }; }
   const info = await t.sendMail({
