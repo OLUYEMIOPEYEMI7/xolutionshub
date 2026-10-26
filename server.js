@@ -67,6 +67,10 @@ app.use((req, res, next) => {
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false, message: 'Too many login attempts. Please try again in a few minutes.' });
 const orderLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false, message: 'Too many orders submitted. Please try again later or WhatsApp us directly.' });
 app.use('/login', loginLimiter);
+// Password reset: count only submissions (not page views), so a real user isn't locked out mid-reset.
+const resetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, skip: req => req.method !== 'POST', standardHeaders: true, legacyHeaders: false, message: 'Too many password reset attempts. Please try again in a few minutes.' });
+app.use('/forgot-password', resetLimiter);
+app.use('/reset-password', resetLimiter);
 app.use('/order', orderLimiter);
 
 // Attach current student (if logged in) to every request
@@ -94,4 +98,5 @@ app.use((req, res) => res.status(404).render('404'));
 
 app.listen(PORT, () => {
   console.log(`XOLUTIONS HUB running at http://localhost:${PORT}`);
+  if (process.env.DATABASE_URL) require('./bootstrapAdmins')().catch(e => console.error('Admin bootstrap failed:', e.message));
 });

@@ -93,4 +93,34 @@ function sendOrderConfirmation(order, activationUrl) {
     layout(order, 'Payment confirmed', intro, extra));
 }
 
-module.exports = { sendOrderReceived, sendOrderConfirmation, money };
+// Internal alert to the business for every new order.
+function sendNewOrderAlert(order) {
+  if (!site.orderAlertEmails.length) return Promise.resolve({ skipped: true });
+  const adminUrl = BASE_URL() + '/admin/orders/' + encodeURIComponent(order.id);
+  const row = (k, v) => v ? `<tr><td style="padding:3px 12px 3px 0; color:#64748b; font-size:13.5px; vertical-align:top;">${k}</td><td style="padding:3px 0; color:#0f172a; font-size:14px;">${esc(v)}</td></tr>` : '';
+  const intro = `<p style="color:#334155; font-size:14.5px; line-height:1.6;">A new order is waiting for a bank transfer of <strong>${money(order.grand_total)}</strong>. Watch WhatsApp for the receipt, then confirm the payment in admin.</p>
+    <table style="border-collapse:collapse; margin:8px 0 4px;">
+      ${row('Name', order.name)}${row('Email', order.email)}${row('Phone', order.phone)}${row('Institution', order.institution)}${row('Level', order.level)}${row('Topic', order.project_topic)}${row('Details', order.project_description)}${row('Delivery', order.delivery_speed)}
+    </table>`;
+  const extra = `<div style="text-align:center; margin:20px 0 0;"><a href="${adminUrl}" style="background:#0c1347; color:#ffffff; padding:11px 24px; border-radius:6px; text-decoration:none; font-weight:700; font-size:14.5px; display:inline-block;">Open in admin</a></div>`;
+  return send(site.orderAlertEmails.join(', '), `New order ${order.reference} — ${money(order.grand_total)} awaiting transfer`,
+    layout(order, 'New order received', intro, extra));
+}
+
+function sendPasswordReset(to, resetUrl) {
+  const html = `
+  <div style="font-family:'Segoe UI',Arial,sans-serif; background:#f3f5f9; padding:32px 0;">
+    <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:10px; overflow:hidden; border:1px solid #e2e8f0;">
+      <div style="background:#0c1347; padding:28px 32px;"><span style="color:#ffffff; font-size:20px; font-weight:700;">XOLUTIONS HUB</span></div>
+      <div style="padding:32px;">
+        <h1 style="color:#0f172a; font-size:21px; margin:0 0 16px;">Set your password</h1>
+        <p style="color:#334155; font-size:14.5px; line-height:1.6;">Someone (hopefully you) asked to set or reset the password for this XOLUTIONS HUB account. The link works once and expires in 1 hour.</p>
+        <div style="text-align:center; margin:28px 0;"><a href="${resetUrl}" style="background:#f97316; color:#0f172a; padding:12px 28px; border-radius:6px; text-decoration:none; font-weight:700; font-size:15px; display:inline-block;">Set a new password</a></div>
+        <p style="color:#64748b; font-size:13.5px; line-height:1.6;">If you didn't ask for this, ignore this email; your password won't change.</p>
+      </div>
+    </div>
+  </div>`;
+  return send(to, 'XOLUTIONS HUB — Set your password', html);
+}
+
+module.exports = { sendOrderReceived, sendOrderConfirmation, sendNewOrderAlert, sendPasswordReset, money };
