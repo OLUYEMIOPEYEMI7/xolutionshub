@@ -2,7 +2,7 @@ const express = require('express');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db');
-const { sendOrderConfirmation } = require('../mailer');
+const { deliver, sendOrderConfirmation } = require('../mailer');
 const router = express.Router();
 
 const PAYMENT_STATUSES = ['pending', 'paid', 'failed'];
@@ -62,7 +62,7 @@ router.post('/admin/orders/:id/payment', requireAdmin, async (req, res) => {
       const needsActivation = (student.passwordHash || '').startsWith(UNACTIVATED_PREFIX);
       const base = process.env.APP_BASE_URL || 'https://xolutionshub.onrender.com';
       const activationUrl = needsActivation ? base + '/activate?ref=' + encodeURIComponent(order.reference) : null;
-      sendOrderConfirmation({ ...order, payment_status: 'paid' }, activationUrl).catch(e => console.error('Email send failed:', e.message));
+      await deliver('Payment confirmation', sendOrderConfirmation({ ...order, payment_status: 'paid' }, activationUrl));
       return res.redirect('/admin/orders/' + order.id + '?flash=paid');
     }
     res.redirect('/admin/orders/' + order.id + '?flash=payment');

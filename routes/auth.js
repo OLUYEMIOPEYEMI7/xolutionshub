@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
 const { UNACTIVATED_PREFIX } = require('./admin');
-const { sendPasswordReset } = require('../mailer');
+const { deliver, sendPasswordReset } = require('../mailer');
 const resetTokens = require('../passwordReset');
 const router = express.Router();
 
@@ -46,7 +46,7 @@ router.post('/forgot-password', async (req, res) => {
     if (student) {
       const base = process.env.APP_BASE_URL || 'https://xolutionshub.onrender.com';
       const url = base + '/reset-password?token=' + encodeURIComponent(resetTokens.createToken(student));
-      sendPasswordReset(student.email, url).catch(e => console.error('Reset email failed:', e.message));
+      await deliver('Password reset', sendPasswordReset(student.email, url));
     }
     res.render('forgot-password', { error: null, sent: true });
   } catch (err) {

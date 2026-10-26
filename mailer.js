@@ -144,4 +144,16 @@ function sendPasswordReset(to, resetUrl) {
   return send(to, 'XOLUTIONS HUB — Set your password', html);
 }
 
-module.exports = { sendOrderReceived, sendOrderConfirmation, sendNewOrderAlert, sendPasswordReset, money };
+// Awaits a send but never throws: a failed email is logged, not shown to the visitor.
+// Routes await this *before* responding, because on Cloud Run the CPU is throttled once
+// the response has been sent, which would stall fire-and-forget sends.
+async function deliver(label, promise) {
+  try {
+    return await promise;
+  } catch (e) {
+    console.error(label + ' email failed:', e.message);
+    return { skipped: true, error: e.message };
+  }
+}
+
+module.exports = { deliver, sendOrderReceived, sendOrderConfirmation, sendNewOrderAlert, sendPasswordReset, money };
