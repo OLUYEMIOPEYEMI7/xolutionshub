@@ -24,11 +24,21 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Sessions live in Postgres so logins, CSRF tokens and the "order placed" page survive
 // restarts and redeploys (Render's free plan sleeps and restarts the process). The table
-// is created on first start. Without DATABASE_URL (local dev) the in-memory store is used.
+// is created at startup (below) with xh_-prefixed constraint/index names: the library's own
+// auto-create uses "session_pkey", which clashes with other apps sharing the database.
+// Without DATABASE_URL (local dev) the in-memory store is used.
 const PgSession = require('connect-pg-simple')(session);
 const sessionStore = process.env.DATABASE_URL
-  ? new PgSession({ pool: db.pool, tableName: 'xh_sessions', createTableIfMissing: true })
+  ? new PgSession({ pool: db.pool, tableName: 'xh_sessions', createTableIfMissing: false })
   : undefined;
+const SESSION_TABLE_SQL = `
+  CREATE TABLE IF NOT EXISTS xh_sessions (
+    sid VARCHAR NOT NULL COLLATE "default",
+    sess JSON NOT NULL,
+    expire TIMESTAMP(6) NOT NULL,
+    CONSTRAINT xh_sessions_pkey PRIMARY KEY (sid)
+  );
+  CREATE INDEX IF NOT EXISTS xh_sessions_expire_idx ON xh_sessions (expire);`;
 
 app.use(session({
   store: sessionStore,
@@ -96,7 +106,17 @@ app.use(adminRouter);
 
 app.use((req, res) => res.status(404).render('404'));
 
-app.listen(PORT, () => {
-  console.log(`XOLUTIONS HUB running at http://localhost:${PORT}`);
-  if (process.env.DATABASE_URL) require('./bootstrapAdmins')().catch(e => console.error('Admin bootstrap failed:', e.message));
+async function start() {
+  if (process.env.DATABASE_URL) {
+    // Must exist before the first request touches a session.
+    await db.query(SESSION_TABLE_SQL);
+  }
+  app.listen(PORT, () => {
+    console.log(`XOLUTIONS HUB running at http://localhost:${PORT}`);
+    if (process.env.DATABASE_URL) require('./bootstrapAdmins')().catch(e => console.error('Admin bootstrap failed:', e.message));
+  });
+}
+start().catch(err => {
+  console.error('Startup failed:', err.message);
+  process.exit(1);
 });
