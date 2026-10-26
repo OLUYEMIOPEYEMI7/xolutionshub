@@ -8,7 +8,8 @@ const db = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3100;
-const isProd = process.env.NODE_ENV === 'production' || !!process.env.RENDER;
+// RENDER is set on Render, K_SERVICE on Google Cloud Run.
+const isProd = process.env.NODE_ENV === 'production' || !!process.env.RENDER || !!process.env.K_SERVICE;
 
 // Render (and most PaaS) sit behind a reverse proxy — required for secure cookies
 // and correct req.secure / X-Forwarded-Proto detection.
@@ -110,10 +111,11 @@ async function start() {
   if (process.env.DATABASE_URL) {
     // Must exist before the first request touches a session.
     await db.query(SESSION_TABLE_SQL);
+    // Done before listening: on Cloud Run, work after startup gets little CPU until a request arrives.
+    await require('./bootstrapAdmins')().catch(e => console.error('Admin bootstrap failed:', e.message));
   }
   app.listen(PORT, () => {
     console.log(`XOLUTIONS HUB running at http://localhost:${PORT}`);
-    if (process.env.DATABASE_URL) require('./bootstrapAdmins')().catch(e => console.error('Admin bootstrap failed:', e.message));
   });
 }
 start().catch(err => {
