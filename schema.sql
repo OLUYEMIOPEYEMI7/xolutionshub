@@ -43,11 +43,13 @@ CREATE TABLE IF NOT EXISTS xh_order_documents (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Login sessions (express-session via connect-pg-simple). The app creates this table
--- automatically on first start; it is listed here for reference.
+-- Login sessions (express-session via connect-pg-simple). server.js creates this table
+-- at startup; it is listed here for reference. Constraint/index names are xh_-prefixed
+-- so they can't clash with other apps' "session" tables in a shared database.
 CREATE TABLE IF NOT EXISTS xh_sessions (
-  sid VARCHAR NOT NULL PRIMARY KEY,
+  sid VARCHAR NOT NULL COLLATE "default",
   sess JSON NOT NULL,
-  expire TIMESTAMP(6) NOT NULL
+  expire TIMESTAMP(6) NOT NULL,
+  CONSTRAINT xh_sessions_pkey PRIMARY KEY (sid)
 );
-CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON xh_sessions (expire);
+CREATE INDEX IF NOT EXISTS xh_sessions_expire_idx ON xh_sessions (expire);
