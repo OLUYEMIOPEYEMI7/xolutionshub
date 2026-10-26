@@ -14,6 +14,13 @@ const isProd = process.env.NODE_ENV === 'production' || !!process.env.RENDER;
 // and correct req.secure / X-Forwarded-Proto detection.
 app.set('trust proxy', 1);
 
+// Public contact details, shared by every view (single source of truth).
+app.locals.site = {
+  whatsappIntl: '2349041372994',
+  whatsappDisplay: '0904 137 2994',
+  email: 'xolutionshub@gmail.com'
+};
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));

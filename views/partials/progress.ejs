@@ -1,0 +1,13 @@
+<%
+  const _steps = [['awaiting_payment','Awaiting payment'],['in_queue','In queue'],['in_progress','In progress'],['review','Review'],['completed','Completed']];
+  const _idx = _steps.findIndex(s => s[0] === status);
+%>
+<% if (status === 'cancelled') { %>
+  <p class="muted" style="margin:var(--s3) 0;">This order was cancelled.</p>
+<% } else { %>
+  <ol class="progress" aria-label="Order progress">
+    <% _steps.forEach((s, i) => { %>
+      <li class="<%= i < _idx ? 'done' : (i === _idx ? 'now' : '') %>"<%- i === _idx ? ' aria-current="step"' : '' %>><span></span><small><%= s[1] %></small></li>
+    <% }) %>
+  </ol>
+<% } %>

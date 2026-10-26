@@ -4,229 +4,207 @@
   <%- include('partials/head', { pageTitle: 'XOLUTIONS HUB — Professional Project Support for Nigerian Undergraduates', pageDescription: 'Build a project support package from topic development to defence preparation. Transparent pricing, secure Paystack payment, live order tracking, confidential document handling.', canonicalUrl: (process.env.APP_BASE_URL || 'https://xolutionshub.onrender.com') + '/' }) %>
 </head>
 <body>
+<%
+  // Values to repopulate if the order form is re-rendered after a validation/server error.
+  const f = (typeof form !== 'undefined' && form) ? form : {};
+  const pickedRaw = f.items ? (Array.isArray(f.items) ? f.items : [f.items]) : [];
+  const picked = new Set(pickedRaw);
+  const pickedSpeed = f.deliverySpeed || services.deliverySpeeds[0].key;
+  const fv = k => (f[k] || '');
+  // Hero rail: real services, in the order a project usually moves through them.
+  const railKeys = ['topic-proposal', 'chapters-1-3', 'questionnaire', 'data-analysis', 'chapters-4-5', 'formatting', 'defense-prep'];
+  const rail = railKeys.map(k => services.findItem(k)).filter(Boolean);
+  const hasError = (typeof error !== 'undefined' && error);
+%>
   <%- include('partials/nav') %>
 
-  <main>
-  <section class="hero">
-    <div class="hero-inner">
-      <div>
-        <span class="eyebrow">★ PROFESSIONAL PROJECT SUPPORT</span>
-        <h1>Build a support package around the stage you're actually at.</h1>
-        <p class="hero-sub">Choose exactly what you need — nothing more. XOLUTIONS HUB prices every service up front, tracks your order from submission to delivery, and keeps your documents secure throughout.</p>
-        <div class="hero-badges">
-          <span class="hero-badge"><%- include('partials/icon', {name:'lock', size:14}) %> Secure Paystack payment</span>
-          <span class="hero-badge"><%- include('partials/icon', {name:'chart', size:14}) %> Live order tracking</span>
-          <span class="hero-badge"><%- include('partials/icon', {name:'file', size:14}) %> Confidential document handling</span>
-          <span class="hero-badge"><%- include('partials/icon', {name:'cap', size:14}) %> Built for Nigerian undergraduates</span>
-        </div>
-      </div>
-      <div class="hero-steps">
-        <h2 style="font-size:13px; text-transform:uppercase; letter-spacing:0.5px; color:var(--body-text); margin-bottom:16px; font-weight:700;">How it works</h2>
-        <div class="hero-step"><span class="hero-step-num">1</span><span>Select the exact services you need</span></div>
-        <div class="hero-step"><span class="hero-step-num">2</span><span>Tell us about your project</span></div>
-        <div class="hero-step"><span class="hero-step-num">3</span><span>Review the exact price — no surprises</span></div>
-        <div class="hero-step"><span class="hero-step-num">4</span><span>Pay securely and track progress</span></div>
-      </div>
-    </div>
-  </section>
-
-  <div class="trust-strip">
-    <div class="trust-strip-inner">
-      <div class="trust-item"><%- include('partials/icon', {name:'shield'}) %> Payments secured by Paystack</div>
-      <div class="trust-item"><%- include('partials/icon', {name:'mail'}) %> Email confirmation on every order</div>
-      <div class="trust-item"><%- include('partials/icon', {name:'handshake'}) %> WhatsApp support: 0904 137 2994</div>
-      <div class="trust-item"><%- include('partials/icon', {name:'folder'}) %> Order history always available in your dashboard</div>
-    </div>
-  </div>
-
-  <section class="builder-section" id="builder">
-    <div class="builder-head">
-      <h2>Build Your Support Package</h2>
-      <p class="muted">Select services, add your project details, and see the exact total before you pay.</p>
-    </div>
-
-    <% if (typeof error !== 'undefined' && error) { %><div class="error-banner" style="max-width:760px; margin:0 auto 24px;"><%= error %></div><% } %>
-
-    <form method="POST" action="/order" id="order-form">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-      <div class="builder-grid">
+  <main id="main" tabindex="-1">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap hero-inner">
         <div>
-          <% services.categories.forEach(cat => { %>
-            <div class="service-category">
-              <h3><%= cat.name %></h3>
-              <p class="cat-note"><%= cat.note %></p>
-              <% cat.items.forEach(item => { %>
-                <div class="service-item">
-                  <input type="checkbox" name="items" value="<%= item.key %>" id="item-<%= item.key %>" data-price="<%= item.price %>" data-name="<%= item.name %>" onchange="updateSummary()" />
-                  <div class="service-item-body">
-                    <div class="service-item-top">
-                      <label class="service-item-name" for="item-<%= item.key %>"><%= item.name %></label>
-                      <span class="service-item-price">₦<%= item.price.toLocaleString('en-NG') %></span>
-                    </div>
-                    <p class="service-item-desc"><%= item.description %></p>
-                    <span class="service-item-meta"><%= item.eta %></span>
-                    <% if (item.requiresNote) { %><div class="service-item-note"><%= item.requiresNote %></div><% } %>
-                  </div>
+          <p class="eyebrow eyebrow--light">Professional project support</p>
+          <h1 id="hero-title">
+            <span class="line"><span>Build a support</span></span>
+            <span class="line"><span>package around</span></span>
+            <span class="line"><span>the stage <em>you&rsquo;re</em></span></span>
+            <span class="line"><span><em>actually at.</em></span></span>
+          </h1>
+          <p class="hero-sub">Choose exactly what you need, nothing more. XOLUTIONS HUB prices every service up front, tracks your order from submission to delivery, and keeps your documents secure throughout.</p>
+          <div class="hero-actions">
+            <a class="btn btn-lg" href="#builder">Start your order</a>
+            <a class="btn btn-lg btn-ghost" href="/track">Track an order</a>
+          </div>
+          <ul class="hero-badges" aria-label="Highlights">
+            <li class="hero-badge"><%- include('partials/icon', {name:'lock', size:14}) %> Secure Paystack payment</li>
+            <li class="hero-badge"><%- include('partials/icon', {name:'chart', size:14}) %> Live order tracking</li>
+            <li class="hero-badge"><%- include('partials/icon', {name:'file', size:14}) %> Confidential document handling</li>
+            <li class="hero-badge"><%- include('partials/icon', {name:'cap', size:14}) %> Built for Nigerian undergraduates</li>
+          </ul>
+        </div>
+        <aside class="rail" aria-labelledby="rail-title">
+          <h2 id="rail-title">A project, stage by stage</h2>
+          <ol class="rail-list">
+            <% rail.forEach((s, i) => { %>
+              <li style="--i:<%= i %>"><span class="rail-dot" aria-hidden="true"></span><span class="rail-name"><%= s.name %></span><span class="rail-price">₦<%= s.price.toLocaleString('en-NG') %></span></li>
+            <% }) %>
+          </ol>
+          <a class="rail-more" href="#builder">Pick only the stages you need &rarr;</a>
+        </aside>
+      </div>
+    </section>
+
+    <div class="trust">
+      <ul class="wrap trust-inner">
+        <li class="trust-item"><%- include('partials/icon', {name:'shield'}) %> Payments secured by Paystack</li>
+        <li class="trust-item"><%- include('partials/icon', {name:'mail'}) %> Email confirmation on every order</li>
+        <li class="trust-item"><%- include('partials/icon', {name:'whatsapp'}) %> WhatsApp support: <%= site.whatsappDisplay %></li>
+        <li class="trust-item"><%- include('partials/icon', {name:'folder'}) %> Order history in your dashboard</li>
+      </ul>
+    </div>
+
+    <section class="builder" id="builder" tabindex="-1" aria-labelledby="builder-title">
+      <div class="wrap">
+        <div class="builder-head reveal">
+          <p class="eyebrow">Services &amp; pricing</p>
+          <h2 class="h2" id="builder-title">Build your support package.</h2>
+          <p class="lead">Select services, add your project details, and see the exact total before you pay.</p>
+        </div>
+
+        <div id="builder-error" class="error-banner" role="alert" tabindex="-1" <%- hasError ? '' : 'hidden' %>><%= hasError ? error : 'Please select at least one service to continue.' %></div>
+
+        <form method="POST" action="/order" id="order-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <div class="builder-grid">
+            <div>
+              <% services.categories.forEach(cat => { %>
+                <fieldset class="group">
+                  <legend><%= cat.name %></legend>
+                  <p class="cat-note"><%= cat.note %></p>
+                  <% cat.items.forEach(item => { %>
+                    <label class="svc <%= picked.has(item.key) ? 'is-on' : '' %>" for="item-<%= item.key %>">
+                      <input type="checkbox" name="items" value="<%= item.key %>" id="item-<%= item.key %>" data-price="<%= item.price %>" data-name="<%= item.name %>" <%= picked.has(item.key) ? 'checked' : '' %> />
+                      <span class="svc-box" aria-hidden="true"></span>
+                      <span class="svc-body">
+                        <span class="svc-name"><%= item.name %></span>
+                        <span class="svc-desc"><%= item.description %></span>
+                        <% if (item.requiresNote) { %><span class="svc-note"><%= item.requiresNote %></span><% } %>
+                      </span>
+                      <span class="svc-meta">
+                        <span class="svc-price">₦<%= item.price.toLocaleString('en-NG') %></span>
+                        <span class="svc-eta"><%= item.eta %></span>
+                      </span>
+                    </label>
+                  <% }) %>
+                </fieldset>
+              <% }) %>
+
+              <fieldset class="group">
+                <legend>Delivery speed</legend>
+                <div class="seg" role="radiogroup">
+                  <% services.deliverySpeeds.forEach(d => { %>
+                    <label class="seg-opt <%= pickedSpeed === d.key ? 'is-on' : '' %>">
+                      <input type="radio" name="deliverySpeed" value="<%= d.key %>" data-extra="<%= d.extra %>" <%= pickedSpeed === d.key ? 'checked' : '' %> />
+                      <span class="seg-label"><%= d.name %></span>
+                      <span class="seg-extra"><%= d.extra > 0 ? '+₦' + d.extra.toLocaleString('en-NG') : 'No extra charge' %></span>
+                      <span class="seg-note"><%= d.note %></span>
+                    </label>
+                  <% }) %>
                 </div>
-              <% }) %>
-            </div>
-          <% }) %>
+              </fieldset>
 
-          <div class="delivery-box">
-            <h3><%- include('partials/icon', {name:'clock'}) %> Delivery Speed</h3>
-            <div class="delivery-options">
-              <% services.deliverySpeeds.forEach((d, i) => { %>
-                <label class="delivery-option <%= i === 0 ? 'active' : '' %>" data-speed="<%= d.key %>">
-                  <input type="radio" name="deliverySpeed" value="<%= d.key %>" <%= i === 0 ? 'checked' : '' %> onchange="selectSpeed('<%= d.key %>')" />
-                  <strong><%= d.name %></strong>
-                  <span class="extra"><%= d.extra > 0 ? '+₦' + d.extra.toLocaleString('en-NG') : '₦0' %></span>
-                  <span class="note"><%= d.note %></span>
-                </label>
-              <% }) %>
+              <fieldset class="group" id="details">
+                <legend>Your details &amp; project</legend>
+                <p class="cat-note">We use these only to process and deliver this order. See the <a href="/privacy">Privacy Policy</a>.</p>
+                <div class="form-grid" style="margin-top:var(--s4);">
+                  <div class="field"><label for="f-name">Full name <span class="req" aria-hidden="true">*</span></label><input id="f-name" type="text" name="name" required autocomplete="name" value="<%= fv('name') %>" /></div>
+                  <div class="field"><label for="f-email">Email address <span class="req" aria-hidden="true">*</span></label><input id="f-email" type="email" name="email" required autocomplete="email" inputmode="email" placeholder="you@example.com" value="<%= fv('email') %>" /></div>
+                  <div class="field"><label for="f-phone">Phone / WhatsApp</label><input id="f-phone" type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="080..." value="<%= fv('phone') %>" /></div>
+                  <div class="field"><label for="f-institution">Institution</label><input id="f-institution" type="text" name="institution" autocomplete="organization" placeholder="e.g. University of Lagos" value="<%= fv('institution') %>" /></div>
+                  <div class="field"><label for="level-select">Level</label>
+                    <select name="level" id="level-select">
+                      <option value="">Select level</option>
+                      <% [['ND/HND','ND / HND'],['100L','100 Level'],['200L','200 Level'],['300L','300 Level'],['400L','400 Level'],['500L','500 Level'],['Masters','Masters'],['PhD','PhD']].forEach(l => { %>
+                        <option value="<%= l[0] %>" <%= fv('level') === l[0] ? 'selected' : '' %>><%= l[1] %></option>
+                      <% }) %>
+                    </select>
+                  </div>
+                  <div class="field"><label for="f-topic">Project topic (if known)</label><input id="f-topic" type="text" name="projectTopic" placeholder="e.g. Impact of AI on..." value="<%= fv('projectTopic') %>" /></div>
+                  <div class="field field--wide"><label for="f-desc">Tell us about your project</label><textarea id="f-desc" name="projectDescription" placeholder="Current stage, department, deadline, specific requirements..."><%= fv('projectDescription') %></textarea></div>
+                </div>
+              </fieldset>
             </div>
-          </div>
 
-          <div class="details-box">
-            <h3><%- include('partials/icon', {name:'edit'}) %> Your Details & Project</h3>
-            <div class="form-row">
-              <div class="form-group"><label>Full Name *</label><input type="text" name="name" required placeholder="Your full name" /></div>
-              <div class="form-group"><label>Email Address *</label><input type="email" name="email" required placeholder="you@example.com" /></div>
-            </div>
-            <div class="form-row">
-              <div class="form-group"><label>Phone / WhatsApp</label><input type="tel" name="phone" placeholder="080..." /></div>
-              <div class="form-group"><label>Institution</label><input type="text" name="institution" placeholder="e.g. University of Lagos" /></div>
-            </div>
-            <div class="form-row">
-              <div class="form-group"><label for="level-select">Level</label>
-                <select name="level" id="level-select">
-                  <option value="">Select level</option>
-                  <option value="ND/HND">ND / HND</option>
-                  <option value="100L">100 Level</option>
-                  <option value="200L">200 Level</option>
-                  <option value="300L">300 Level</option>
-                  <option value="400L">400 Level</option>
-                  <option value="500L">500 Level</option>
-                  <option value="Masters">Masters</option>
-                  <option value="PhD">PhD</option>
-                </select>
+            <aside class="summary" id="package" aria-labelledby="sum-title">
+              <h3 id="sum-title">Your package</h3>
+              <div id="summary-lines" aria-live="polite"><p class="summary-empty">No services selected yet. Choose a service to see your total.</p></div>
+              <div class="totals" aria-live="polite" aria-atomic="true">
+                <div class="row"><span>Services</span><span id="sum-services">₦0</span></div>
+                <div class="row"><span>Handling</span><span id="sum-handling">₦0</span></div>
+                <div class="row grand"><span>Total</span><span id="sum-total">₦0</span></div>
               </div>
-              <div class="form-group"><label>Project Topic (if known)</label><input type="text" name="projectTopic" placeholder="e.g. Impact of AI on..." /></div>
-            </div>
-            <div class="form-group">
-              <label>Tell us about your project</label>
-              <textarea name="projectDescription" placeholder="Share anything relevant — current stage, department, deadline, specific requirements..."></textarea>
-            </div>
+              <button type="submit" class="btn btn-block btn-lg">Continue to payment</button>
+              <p class="summary-fine"><%- include('partials/icon', {name:'lock', size:13}) %> Secure checkout via Paystack. By continuing you agree to the <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>.</p>
+            </aside>
           </div>
-        </div>
+        </form>
+      </div>
 
-        <div>
-          <div class="summary-card">
-            <h3>Your Package</h3>
-            <div id="summary-lines"><p class="summary-empty" id="summary-empty">No services selected.</p></div>
-            <div class="summary-totals">
-              <div class="row"><span>Services</span><span id="sum-services">₦0</span></div>
-              <div class="row"><span>Handling</span><span id="sum-handling">₦0</span></div>
-              <div class="row grand"><span>TOTAL</span><span id="sum-total">₦0</span></div>
-            </div>
-            <button type="submit" class="btn btn-block btn-lg">Continue to Payment</button>
-            <p class="summary-fine"><%- include('partials/icon', {name:'lock', size:13}) %> Secure order processing via Paystack</p>
-          </div>
+      <div class="mbar" id="mbar" hidden>
+        <div><span class="mbar-label" id="mbar-count">0 services</span><strong class="mbar-total" id="mbar-total">₦0</strong></div>
+        <a class="btn btn-sm" href="#package">Review &amp; pay</a>
+      </div>
+    </section>
+
+    <section class="section section--paper2" id="why" tabindex="-1" aria-labelledby="why-title">
+      <div class="wrap why">
+        <div class="why-head reveal">
+          <p class="eyebrow">Why XOLUTIONS HUB</p>
+          <h2 class="h2" id="why-title">Built for clarity, speed and trust.</h2>
+          <p class="muted">Four things we hold to at every step.</p>
+        </div>
+        <ol class="why-list">
+          <li class="why-item reveal"><span class="why-n" aria-hidden="true">01</span><div><h3>Transparent pricing</h3><p>Every service is priced individually. Pick only what you need and see the exact total before you pay.</p></div></li>
+          <li class="why-item reveal" style="--d:60ms"><span class="why-n" aria-hidden="true">02</span><div><h3>Secure payment</h3><p>All payments are processed securely through Paystack: cards, bank transfer and USSD accepted.</p></div></li>
+          <li class="why-item reveal" style="--d:120ms"><span class="why-n" aria-hidden="true">03</span><div><h3>Real-time tracking</h3><p>Track every order from submission to delivery with a reference number and live status updates.</p></div></li>
+          <li class="why-item reveal" style="--d:180ms"><span class="why-n" aria-hidden="true">04</span><div><h3>Confidential &amp; secure</h3><p>Your documents and project details are handled with strict confidentiality throughout.</p></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section" id="faq" tabindex="-1" aria-labelledby="faq-title">
+      <div class="wrap faq">
+        <div class="reveal">
+          <p class="eyebrow">Good to know</p>
+          <h2 class="h2" id="faq-title">Questions, answered plainly.</h2>
+          <p class="muted">Something else? WhatsApp <a href="https://wa.me/<%= site.whatsappIntl %>"><%= site.whatsappDisplay %></a>.</p>
+        </div>
+        <div class="faq-list reveal" style="--d:80ms">
+          <details><summary>How does pricing work?</summary><p>Every service has a fixed, published price shown on this page. Select what you need, and the total updates instantly. There are no hidden fees beyond the delivery speed you choose.</p></details>
+          <details><summary>How do I pay?</summary><p>Payment is handled securely through Paystack, supporting cards, bank transfer, and USSD. You'll be redirected to Paystack's secure checkout immediately after submitting your order.</p></details>
+          <details><summary>What happens after I submit my order?</summary><p>You'll receive a unique order reference and a confirmation email. Your order enters our queue, and you can track its status anytime using your reference and email at <a href="/track">/track</a>, or from your dashboard if you're logged in.</p></details>
+          <details><summary>Can I upload supporting documents?</summary><p>Yes. Once your order is placed, log in to your dashboard to upload any relevant files (PDF, Word, Excel, PowerPoint, images, or ZIP, up to 15MB each).</p></details>
+          <details><summary>What's your revision and refund policy?</summary><p>Specific revision and refund terms depend on the service and are confirmed with you directly. WhatsApp us at <a href="https://wa.me/<%= site.whatsappIntl %>"><%= site.whatsappDisplay %></a> before or after ordering if you have questions about a specific case.</p></details>
+          <details><summary>Is my information kept confidential?</summary><p>Yes. Your project details and uploaded documents are only accessible to you and our team, and are never shared with third parties. See our <a href="/privacy">Privacy Policy</a> for details.</p></details>
+          <details><summary>Do you guarantee specific grades or outcomes?</summary><p>No. We provide structured support, guidance, and deliverables based on your requirements. We don't control or guarantee academic grading, approval, or publication outcomes.</p></details>
         </div>
       </div>
-    </form>
-  </section>
+    </section>
 
-  <section class="process-section">
-    <div class="builder-head">
-      <h2>Why Students Choose XOLUTIONS HUB</h2>
-      <p class="muted">Built for clarity, speed, and trust — every step of the way.</p>
-    </div>
-    <div class="process-grid">
-      <div class="process-card"><div class="process-num">1</div><h3>Transparent Pricing</h3><p>Every service is priced individually — pick only what you need, see the exact total before you pay.</p></div>
-      <div class="process-card"><div class="process-num">2</div><h3>Secure Payment</h3><p>All payments are processed securely through Paystack — cards, bank transfer, and USSD accepted.</p></div>
-      <div class="process-card"><div class="process-num">3</div><h3>Real-Time Tracking</h3><p>Track every order from submission to delivery with a reference number and live status updates.</p></div>
-      <div class="process-card"><div class="process-num">4</div><h3>Confidential & Secure</h3><p>Your documents and project details are handled with strict confidentiality throughout.</p></div>
-    </div>
-  </section>
-
-  <section class="builder-section" id="faq" style="padding-top:20px;">
-    <div class="builder-head">
-      <h2>Frequently Asked Questions</h2>
-    </div>
-    <div style="max-width:760px; margin:0 auto;">
-      <details class="faq-item">
-        <summary>How does pricing work?</summary>
-        <p>Every service has a fixed, published price shown on this page. Select what you need, and the total updates instantly — there are no hidden fees beyond the delivery speed you choose.</p>
-      </details>
-      <details class="faq-item">
-        <summary>How do I pay?</summary>
-        <p>Payment is handled securely through Paystack, supporting cards, bank transfer, and USSD. You'll be redirected to Paystack's secure checkout immediately after submitting your order.</p>
-      </details>
-      <details class="faq-item">
-        <summary>What happens after I submit my order?</summary>
-        <p>You'll receive a unique order reference and a confirmation email. Your order enters our queue, and you can track its status anytime using your reference and email at <a href="/track" style="color:var(--navy); font-weight:600;">/track</a>, or from your dashboard if you're logged in.</p>
-      </details>
-      <details class="faq-item">
-        <summary>Can I upload supporting documents?</summary>
-        <p>Yes — once your order is placed, log in to your dashboard to upload any relevant files (PDF, Word, Excel, PowerPoint, images, or ZIP, up to 15MB each).</p>
-      </details>
-      <details class="faq-item">
-        <summary>What's your revision and refund policy?</summary>
-        <p>Specific revision and refund terms depend on the service and are confirmed with you directly — WhatsApp us at <a href="https://wa.me/2349041372994" style="color:var(--orange); font-weight:600;">0904 137 2994</a> before or after ordering if you have questions about a specific case.</p>
-      </details>
-      <details class="faq-item">
-        <summary>Is my information kept confidential?</summary>
-        <p>Yes. Your project details and uploaded documents are only accessible to you and our team, and are never shared with third parties. See our <a href="/privacy" style="color:var(--navy); font-weight:600;">Privacy Policy</a> for details.</p>
-      </details>
-      <details class="faq-item">
-        <summary>Do you guarantee specific grades or outcomes?</summary>
-        <p>No. We provide structured support, guidance, and deliverables based on your requirements — we don't control or guarantee academic grading, approval, or publication outcomes.</p>
-      </details>
-    </div>
-  </section>
-
+    <section class="section section--ink" id="contact" tabindex="-1" aria-labelledby="contact-title">
+      <div class="wrap contact">
+        <div class="reveal">
+          <p class="eyebrow eyebrow--light">Contact</p>
+          <h2 class="h2 h2--light" id="contact-title">Talk to XOLUTIONS HUB.</h2>
+          <p class="contact-motto">Your Success, Our Priority.</p>
+        </div>
+        <div class="reveal" style="--d:80ms">
+          <a class="contact-row" href="https://wa.me/<%= site.whatsappIntl %>" rel="noopener noreferrer" target="_blank"><span>WhatsApp</span><strong><%= site.whatsappDisplay %></strong></a>
+          <a class="contact-row" href="mailto:<%= site.email %>"><span>Email</span><strong><%= site.email %></strong></a>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <footer class="site-footer">
-    <p><strong style="color:#fff;">XOLUTIONS HUB</strong> &middot; Your Success, Our Priority.</p>
-    <p>WhatsApp: <a href="https://wa.me/2349041372994">0904 137 2994</a> &middot; <a href="mailto:xolutionshub@gmail.com">xolutionshub@gmail.com</a></p>
-    <p style="margin-top:10px; font-size:12.5px;"><a href="/terms">Terms of Service</a> &middot; <a href="/privacy">Privacy Policy</a></p>
-    <p style="margin-top:14px; font-size:11.5px; color:#9ca3c4;">&copy; <%= new Date().getFullYear() %> XOLUTIONS HUB. All rights reserved.</p>
-  </footer>
-  <script>
-    function money(n) { return '₦' + Number(n).toLocaleString('en-NG'); }
-    let selectedSpeed = { key: '<%= services.deliverySpeeds[0].key %>', extra: 0 };
-
-    function selectSpeed(key) {
-      document.querySelectorAll('.delivery-option').forEach(el => el.classList.toggle('active', el.dataset.speed === key));
-      const speeds = <%- JSON.stringify(services.deliverySpeeds) %>;
-      const s = speeds.find(d => d.key === key);
-      selectedSpeed = { key, extra: s ? s.extra : 0 };
-      updateSummary();
-    }
-
-    function updateSummary() {
-      const checked = [...document.querySelectorAll('input[name="items"]:checked')];
-      const linesEl = document.getElementById('summary-lines');
-      const emptyEl = document.getElementById('summary-empty');
-      let servicesTotal = 0;
-
-      if (checked.length === 0) {
-        linesEl.innerHTML = '<p class="summary-empty" id="summary-empty">No services selected.</p>';
-      } else {
-        linesEl.innerHTML = checked.map(cb => {
-          const price = Number(cb.dataset.price);
-          servicesTotal += price;
-          return `<div class="summary-line"><span class="name">${cb.dataset.name}</span><span class="price">${money(price)}</span></div>`;
-        }).join('');
-      }
-
-      document.getElementById('sum-services').textContent = money(servicesTotal);
-      document.getElementById('sum-handling').textContent = money(selectedSpeed.extra);
-      document.getElementById('sum-total').textContent = money(servicesTotal + selectedSpeed.extra);
-    }
-
-    updateSummary();
-  </script>
+  <%- include('partials/footer') %>
 </body>
 </html>

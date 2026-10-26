@@ -2,52 +2,59 @@
 <html lang="en">
 <head><%- include('partials/head', { pageTitle: 'Order ' + order.reference + ' | Admin', pageDescription: 'Admin order detail.', noindex: true }) %></head>
 <body>
-  <%- include('partials/nav') %>
-  <div style="max-width:900px; margin:16px auto 0; padding:0 24px;"><a href="/admin" class="navlink" style="color:var(--navy); font-weight:600;">← All Orders</a></div>
-  <main class="dash-wrap">
-    <h1><%= order.reference %></h1>
-    <p class="muted"><%= order.name %> &middot; <%= order.email %> &middot; <%= order.phone || 'No phone' %></p>
-    <p class="muted"><%= order.institution || 'No institution listed' %> &middot; <%= order.level || '—' %></p>
+  <%- include('partials/nav', { activeNav: 'dashboard' }) %>
+  <main id="main" tabindex="-1" class="page">
+    <div class="wrap" style="max-width:900px;">
+      <p><a href="/admin">&larr; All orders</a></p>
+      <h1 class="h1"><%= order.reference %></h1>
+      <p class="muted" style="margin:0;"><%= order.name %> &middot; <%= order.email %> &middot; <%= order.phone || 'No phone' %></p>
+      <p class="muted"><%= order.institution || 'No institution listed' %> &middot; <%= order.level || '—' %></p>
 
-    <div class="dash-order">
-      <span class="status-pill status-<%= order.order_status %>"><%= order.order_status.replace(/_/g, ' ') %></span>
-      <span class="status-pill" style="background:#f1f5f9; color:#475569; margin-left:8px;">Payment: <%= order.payment_status %></span>
+      <div class="order-card">
+        <span class="status-pill status-<%= order.order_status %>"><%= order.order_status.replace(/_/g, ' ') %></span>
+        <span class="status-pill pill-neutral" style="margin-left:var(--s2);">Payment: <%= order.payment_status %></span>
 
-      <h2 style="margin-top:16px; font-size:16px;">Project</h2>
-      <p><strong>Topic:</strong> <%= order.project_topic || 'Not specified' %></p>
-      <p><strong>Description:</strong> <%= order.project_description || 'None provided' %></p>
+        <h2 class="section-label">Project</h2>
+        <dl class="dl">
+          <div><dt>Topic</dt><dd><%= order.project_topic || 'Not specified' %></dd></div>
+          <div><dt>Description</dt><dd><%= order.project_description || 'None provided' %></dd></div>
+        </dl>
 
-      <h3 style="margin-top:16px;">Services</h3>
-      <% (typeof order.items === 'string' ? JSON.parse(order.items) : order.items).forEach(i => { %>
-        <div class="summary-line"><span class="name"><%= i.name %></span><span class="price">₦<%= i.price.toLocaleString('en-NG') %></span></div>
-      <% }) %>
-      <div class="summary-totals">
-        <div class="row"><span>Services</span><span>₦<%= order.services_total.toLocaleString('en-NG') %></span></div>
-        <div class="row"><span>Handling (<%= order.delivery_speed %>)</span><span>₦<%= order.handling_total.toLocaleString('en-NG') %></span></div>
-        <div class="row grand"><span>TOTAL</span><span>₦<%= order.grand_total.toLocaleString('en-NG') %></span></div>
-      </div>
-
-      <h3 style="margin-top:16px;">Documents</h3>
-      <% if (documents.length === 0) { %><p class="muted" style="font-size:13.5px;">No documents uploaded.</p><% } %>
-      <% documents.forEach(doc => { %>
-        <div style="font-size:13.5px; padding:6px 0; display:flex; align-items:center; gap:6px;"><%- include('partials/icon', {name:'clip', size:14}) %><a href="/documents/<%= doc.id %>/download" style="color:var(--navy); font-weight:600;"><%= doc.originalName %></a> <span class="muted">(<%= doc.uploadedBy %>, <%= new Date(doc.createdAt).toLocaleDateString('en-NG') %>)</span></div>
-      <% }) %>
-
-      <h3 style="margin-top:20px;">Update Status</h3>
-      <form method="POST" action="/admin/orders/<%= order.id %>/status">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-        <div class="form-group">
-          <label for="order-status-select">Order Status</label>
-          <select name="orderStatus" id="order-status-select">
-            <% ['awaiting_payment','in_queue','in_progress','review','completed','cancelled'].forEach(s => { %>
-              <option value="<%= s %>" <%= order.order_status === s ? 'selected' : '' %>><%= s.replace(/_/g, ' ') %></option>
-            <% }) %>
-          </select>
+        <h2 class="section-label">Services</h2>
+        <ul class="lines">
+          <% (typeof order.items === 'string' ? JSON.parse(order.items) : order.items).forEach(i => { %>
+            <li><span><%= i.name %></span><span>₦<%= i.price.toLocaleString('en-NG') %></span></li>
+          <% }) %>
+        </ul>
+        <div class="totals">
+          <div class="row"><span>Services</span><span>₦<%= order.services_total.toLocaleString('en-NG') %></span></div>
+          <div class="row"><span>Handling (<%= order.delivery_speed %>)</span><span>₦<%= order.handling_total.toLocaleString('en-NG') %></span></div>
+          <div class="row grand"><span>Total</span><span>₦<%= order.grand_total.toLocaleString('en-NG') %></span></div>
         </div>
-        <div class="form-group"><label>Note to Student (optional)</label><textarea name="adminNotes"><%= order.admin_notes || '' %></textarea></div>
-        <button class="btn" type="submit">Update Order</button>
-      </form>
+
+        <h2 class="section-label">Documents</h2>
+        <% if (documents.length === 0) { %><p class="muted" style="margin:0;">No documents uploaded.</p><% } %>
+        <% documents.forEach(doc => { %>
+          <div class="doc-row"><%- include('partials/icon', {name:'clip', size:14}) %><a href="/documents/<%= doc.id %>/download"><%= doc.originalName %></a> <span class="muted">(<%= doc.uploadedBy %>, <%= new Date(doc.createdAt).toLocaleDateString('en-NG') %>)</span></div>
+        <% }) %>
+
+        <h2 class="section-label">Update status</h2>
+        <form method="POST" action="/admin/orders/<%= order.id %>/status">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <div class="form-group">
+            <label for="order-status-select">Order status</label>
+            <select name="orderStatus" id="order-status-select">
+              <% ['awaiting_payment','in_queue','in_progress','review','completed','cancelled'].forEach(s => { %>
+                <option value="<%= s %>" <%= order.order_status === s ? 'selected' : '' %>><%= s.replace(/_/g, ' ') %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="form-group"><label for="admin-notes">Note to student (optional)</label><textarea id="admin-notes" name="adminNotes"><%= order.admin_notes || '' %></textarea></div>
+          <button class="btn" type="submit">Update order</button>
+        </form>
+      </div>
     </div>
   </main>
+  <%- include('partials/footer') %>
 </body>
 </html>
