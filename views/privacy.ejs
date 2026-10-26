@@ -9,7 +9,7 @@
     <p class="muted">Last updated: <%= new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
 
     <h2>1. Information We Collect</h2>
-    <p>When you place an order, we collect your name, email address, phone number, institution, project details, and any documents you choose to upload. We do not collect or store your payment card details — these are handled entirely by Paystack.</p>
+    <p>When you place an order, we collect your name, email address, phone number, institution, project details, and any documents you choose to upload. Payment is by bank transfer, so we never collect card details. If you send us a payment receipt on WhatsApp, we use it only to verify your payment.</p>
 
     <h2>2. How We Use Your Information</h2>
     <p>We use your information solely to process and fulfil your order, communicate with you about its status, and provide support. We do not sell or share your personal information with third parties for marketing purposes.</p>
@@ -24,7 +24,7 @@
     <p>You can request a copy of the information we hold about you, or request deletion of your account and data, by contacting us at <a href="mailto:<%= site.email %>"><%= site.email %></a>.</p>
 
     <h2>6. Third-Party Services</h2>
-    <p>We use Paystack for payment processing and Gmail for transactional email. These providers have their own privacy policies governing the data they process on our behalf.</p>
+    <p>We use WhatsApp to receive payment receipts and messages, and Gmail for transactional email. These providers have their own privacy policies governing the data they process on our behalf.</p>
 
     <h2>7. Contact</h2>
     <p>Questions about this policy can be sent to <a href="mailto:<%= site.email %>"><%= site.email %></a> or WhatsApp <a href="https://wa.me/<%= site.whatsappIntl %>"><%= site.whatsappDisplay %></a>.</p>

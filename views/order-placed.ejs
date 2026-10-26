@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><%- include('partials/head', { pageTitle: 'Order received | XOLUTIONS HUB', pageDescription: 'Your order has been received. Pay by bank transfer to start.', noindex: true }) %></head>
+<body>
+  <%- include('partials/nav') %>
+  <main id="main" tabindex="-1" class="page">
+    <div class="wrap" style="max-width:820px;">
+      <p class="eyebrow">Order received</p>
+      <h1 class="h1">Thanks, <%= order.name %>. Now pay to start.</h1>
+      <p class="lead">Your order is saved and waiting for payment. We&rsquo;ve also emailed these details to <strong><%= order.email %></strong>.</p>
+
+      <div class="order-card">
+        <div class="order-top">
+          <div>
+            <p class="section-label" style="margin:0;">Your order reference</p>
+            <p class="order-ref" style="margin:0;"><span class="mono"><%= order.reference %></span> <button type="button" class="copy-btn" data-copy="<%= order.reference %>">Copy</button></p>
+          </div>
+          <span class="status-pill status-<%= order.order_status %>"><%= order.order_status.replace(/_/g, ' ') %></span>
+        </div>
+        <p class="hint" style="margin-top:0;">Keep this reference. You need it, with your email, to track the order.</p>
+        <%- include('partials/payment-steps', { order, headingLevel: 2 }) %>
+      </div>
+
+      <details class="order-card">
+        <summary class="section-label" style="margin:0; cursor:pointer;">Order summary</summary>
+        <ul class="lines" style="margin-top:var(--s3);">
+          <% (typeof order.items === 'string' ? JSON.parse(order.items) : order.items).forEach(i => { %>
+            <li><span><%= i.name %></span><span>₦<%= i.price.toLocaleString('en-NG') %></span></li>
+          <% }) %>
+        </ul>
+        <div class="totals">
+          <div class="row"><span>Services</span><span>₦<%= order.services_total.toLocaleString('en-NG') %></span></div>
+          <div class="row"><span>Handling (<%= order.delivery_speed %>)</span><span>₦<%= order.handling_total.toLocaleString('en-NG') %></span></div>
+          <div class="row grand"><span>Total</span><span>₦<%= order.grand_total.toLocaleString('en-NG') %></span></div>
+        </div>
+      </details>
+    </div>
+  </main>
+  <%- include('partials/footer') %>
+</body>
+</html>

@@ -26,6 +26,10 @@
       <div class="order-card">
         <span class="status-pill status-<%= order.order_status %>"><%= order.order_status.replace(/_/g, ' ') %></span>
         <%- include('partials/progress', { status: order.order_status }) %>
+        <% if (order.payment_status !== 'paid' && order.order_status === 'awaiting_payment') { %>
+          <h2 class="section-label">How to pay</h2>
+          <%- include('partials/payment-steps', { order }) %>
+        <% } %>
         <h2 class="section-label">Services</h2>
         <ul class="lines">
           <% (typeof order.items === 'string' ? JSON.parse(order.items) : order.items).forEach(i => { %>

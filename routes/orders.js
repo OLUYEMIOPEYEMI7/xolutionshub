@@ -1,11 +1,10 @@
 const express = require('express');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
-const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const db = require('../db');
 const services = require('../services');
-const { sendOrderConfirmation } = require('../mailer');
+const { sendOrderReceived } = require('../mailer');
 
 const router = express.Router();
 const ALLOWED_DOC_TYPES = new Set([
@@ -33,9 +32,6 @@ const upload = multer({
   }
 });
 
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY || '';
-const APP_BASE_URL = process.env.APP_BASE_URL || 'http://localhost:3100';
-
 function genReference() {
   return 'XH-' + Date.now().toString(36).toUpperCase() + '-' + crypto.randomBytes(3).toString('hex').toUpperCase();
 }
@@ -49,7 +45,7 @@ function computeOrder(itemKeys, deliverySpeedKey) {
   return { items, servicesTotal, handlingTotal, grandTotal: servicesTotal + handlingTotal, speed };
 }
 
-// Submit the order form -> create pending order -> redirect to Paystack
+// Submit the order form -> create order awaiting bank transfer -> show payment instructions
 router.post('/order', async (req, res) => {
   const { name, email, phone, institution, level, projectTopic, projectDescription, deliverySpeed } = req.body;
   let itemKeys = req.body.items;
@@ -60,7 +56,7 @@ router.post('/order', async (req, res) => {
     return res.render('landing', { services, form: req.body, error: 'Please select at least one service and fill in your name and email.' });
   }
 
-  const { items, servicesTotal, handlingTotal, grandTotal } = computeOrder(itemKeys, deliverySpeed);
+  const { items, servicesTotal, handlingTotal, grandTotal, speed } = computeOrder(itemKeys, deliverySpeed);
   if (items.length === 0) {
     return res.render('landing', { services, form: req.body, error: 'The selected services are not valid. Please try again.' });
   }
@@ -69,83 +65,33 @@ router.post('/order', async (req, res) => {
   const orderId = uuidv4();
 
   try {
-    await db.createOrder({
+    const order = await db.createOrder({
       id: orderId, reference, name, email: email.toLowerCase(), phone, institution, level,
-      projectTopic, projectDescription, items, deliverySpeed: deliverySpeed || 'normal',
+      projectTopic, projectDescription, items, deliverySpeed: speed.key,
       servicesTotal, handlingTotal, grandTotal, paymentStatus: 'pending', orderStatus: 'awaiting_payment'
     });
+    sendOrderReceived(order).catch(e => console.error('Email send failed:', e.message));
 
-    if (!PAYSTACK_SECRET_KEY) {
-      return res.render('payment-not-configured', { order: { reference } });
-    }
-
-    const initRes = await fetch('https://api.paystack.co/transaction/initialize', {
-      method: 'POST',
-      headers: { Authorization: 'Bearer ' + PAYSTACK_SECRET_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: email.toLowerCase(),
-        amount: grandTotal * 100,
-        currency: 'NGN',
-        callback_url: APP_BASE_URL + '/payment/callback',
-        metadata: { orderId, reference }
-      })
-    });
-    const data = await initRes.json();
-    if (!data.status) {
-      return res.render('landing', { services, form: req.body, error: 'Payment initialization failed: ' + (data.message || 'unknown error') });
-    }
-
-    res.redirect(data.data.authorization_url);
+    // Post/Redirect/Get: a refresh can't resubmit the order. Only this browser session
+    // may view the payment page for this reference.
+    req.session.placedOrderRef = reference;
+    res.redirect(303, '/order/placed');
   } catch (err) {
     console.error('Order creation failed:', err.message);
     res.render('landing', { services, form: req.body, error: 'Something went wrong creating your order. Please try again.' });
   }
 });
 
-router.get('/payment/callback', async (req, res) => {
-  const reference = req.query.reference;
-  if (!reference) return res.redirect('/');
-
+router.get('/order/placed', async (req, res) => {
+  const reference = req.session.placedOrderRef;
+  if (!reference) return res.redirect('/track');
   try {
     const order = await db.findOrderByReference(reference);
-    if (!order) return res.redirect('/');
-
-    if (!PAYSTACK_SECRET_KEY) return res.redirect('/track?ref=' + reference);
-
-    const verifyRes = await fetch('https://api.paystack.co/transaction/verify/' + reference, {
-      headers: { Authorization: 'Bearer ' + PAYSTACK_SECRET_KEY }
-    });
-    const data = await verifyRes.json();
-
-    if (!(data.status && data.data.status === 'success')) {
-      await db.updateOrderPaymentStatus(reference, 'failed', 'awaiting_payment');
-      return res.render('payment-failed', { order });
-    }
-
-    await db.updateOrderPaymentStatus(reference, 'paid', 'in_queue');
-    sendOrderConfirmation(order).catch(e => console.error('Email send failed:', e.message));
-
-    // Auto-create or reuse a student account tied to this email.
-    let student = await db.findStudentByEmail(order.email);
-    let isNewAccount = false;
-    if (!student) {
-      isNewAccount = true;
-      student = await db.createStudent({
-        id: uuidv4(), name: order.name, email: order.email, phone: order.phone,
-        passwordHash: bcrypt.hashSync(crypto.randomBytes(12).toString('hex'), 10), isAdmin: false
-      });
-    }
-    req.session.justPaid = reference;
-
-    if (isNewAccount) {
-      // New accounts get a random, unknown password — send them to set their own before logging in.
-      return res.redirect('/activate?ref=' + reference);
-    }
-    req.session.studentId = student.id;
-    res.redirect('/dashboard');
+    if (!order) return res.redirect('/track');
+    res.render('order-placed', { order });
   } catch (err) {
-    console.error('Payment callback error:', err.message);
-    res.redirect('/track?ref=' + reference);
+    console.error(err);
+    res.redirect('/track?ref=' + encodeURIComponent(reference));
   }
 });
 

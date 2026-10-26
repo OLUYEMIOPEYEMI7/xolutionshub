@@ -64,6 +64,12 @@ module.exports = {
   async updateOrderPaymentStatus(reference, paymentStatus, orderStatus) {
     await query('UPDATE xh_orders SET payment_status = $1, order_status = $2, updated_at = NOW() WHERE reference = $3', [paymentStatus, orderStatus, reference]);
   },
+  async linkOrderToStudent(orderId, studentId) {
+    await query('UPDATE xh_orders SET student_id = $1, updated_at = NOW() WHERE id = $2', [studentId, orderId]);
+  },
+  async setStudentPassword(id, passwordHash) {
+    await query('UPDATE xh_students SET password_hash = $1 WHERE id = $2', [passwordHash, id]);
+  },
   async updateOrderStatus(id, orderStatus, adminNotes) {
     await query('UPDATE xh_orders SET order_status = $1, admin_notes = COALESCE($2, admin_notes), updated_at = NOW() WHERE id = $3', [orderStatus, adminNotes, id]);
   },

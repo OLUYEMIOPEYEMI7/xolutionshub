@@ -7,7 +7,7 @@
     <div class="wrap page-narrow">
       <div class="auth-card">
         <h1>Welcome back</h1>
-        <p class="sub">Log in to view your orders and upload documents. Your account is created automatically when you place your first order.</p>
+        <p class="sub">Log in to view your orders and upload documents. Your account is created when we confirm the payment for your first order. Check that email for the link to set your password.</p>
         <% if (error) { %><div class="error-banner" role="alert"><%= error %></div><% } %>
         <form method="POST" action="/login">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />

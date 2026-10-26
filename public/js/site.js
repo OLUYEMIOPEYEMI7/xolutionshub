@@ -38,6 +38,24 @@
     els.forEach(function (el) { el.classList.add('in'); });
   }
 
+  // ---- Copy buttons (account number, reference) ----
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.copy-btn');
+    if (!btn) return;
+    var status = document.querySelector('.copy-status');
+    var done = function (ok) {
+      btn.textContent = ok ? 'Copied' : 'Copy failed';
+      btn.classList.toggle('is-done', ok);
+      if (status) status.textContent = ok ? 'Copied ' + btn.dataset.copy : 'Copy failed. Select the text and copy it manually.';
+      setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('is-done'); }, 2000);
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(btn.dataset.copy).then(function () { done(true); }, function () { done(false); });
+    } else {
+      done(false);
+    }
+  });
+
   // ---- Order builder: live summary ----
   var form = document.getElementById('order-form');
   if (!form) return;
@@ -98,7 +116,7 @@
     submitting = true;
     form.querySelectorAll('button[type="submit"]').forEach(function (b) {
       b.setAttribute('aria-disabled', 'true');
-      b.textContent = 'Preparing secure checkout…';
+      b.textContent = 'Placing your order…';
     });
   });
   // bfcache / back button: allow a retry after returning from the payment page

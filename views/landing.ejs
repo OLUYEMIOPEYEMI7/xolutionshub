@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <%- include('partials/head', { pageTitle: 'XOLUTIONS HUB — Professional Project Support for Nigerian Undergraduates', pageDescription: 'Build a project support package from topic development to defence preparation. Transparent pricing, secure Paystack payment, live order tracking, confidential document handling.', canonicalUrl: (process.env.APP_BASE_URL || 'https://xolutionshub.onrender.com') + '/' }) %>
+  <%- include('partials/head', { pageTitle: 'XOLUTIONS HUB — Professional Project Support for Nigerian Undergraduates', pageDescription: 'Build a project support package from topic development to defence preparation. Transparent pricing, payment by bank transfer, live order tracking, confidential document handling.', canonicalUrl: (process.env.APP_BASE_URL || 'https://xolutionshub.onrender.com') + '/' }) %>
 </head>
 <body>
 <%
@@ -35,7 +35,7 @@
             <a class="btn btn-lg btn-ghost" href="/track">Track an order</a>
           </div>
           <ul class="hero-badges" aria-label="Highlights">
-            <li class="hero-badge"><%- include('partials/icon', {name:'lock', size:14}) %> Secure Paystack payment</li>
+            <li class="hero-badge"><%- include('partials/icon', {name:'lock', size:14}) %> Pay by bank transfer</li>
             <li class="hero-badge"><%- include('partials/icon', {name:'chart', size:14}) %> Live order tracking</li>
             <li class="hero-badge"><%- include('partials/icon', {name:'file', size:14}) %> Confidential document handling</li>
             <li class="hero-badge"><%- include('partials/icon', {name:'cap', size:14}) %> Built for Nigerian undergraduates</li>
@@ -55,7 +55,7 @@
 
     <div class="trust">
       <ul class="wrap trust-inner">
-        <li class="trust-item"><%- include('partials/icon', {name:'shield'}) %> Payments secured by Paystack</li>
+        <li class="trust-item"><%- include('partials/icon', {name:'shield'}) %> Bank transfer, confirmed by our team</li>
         <li class="trust-item"><%- include('partials/icon', {name:'mail'}) %> Email confirmation on every order</li>
         <li class="trust-item"><%- include('partials/icon', {name:'whatsapp'}) %> WhatsApp support: <%= site.whatsappDisplay %></li>
         <li class="trust-item"><%- include('partials/icon', {name:'folder'}) %> Order history in your dashboard</li>
@@ -142,8 +142,8 @@
                 <div class="row"><span>Handling</span><span id="sum-handling">₦0</span></div>
                 <div class="row grand"><span>Total</span><span id="sum-total">₦0</span></div>
               </div>
-              <button type="submit" class="btn btn-block btn-lg">Continue to payment</button>
-              <p class="summary-fine"><%- include('partials/icon', {name:'lock', size:13}) %> Secure checkout via Paystack. By continuing you agree to the <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>.</p>
+              <button type="submit" class="btn btn-block btn-lg">Place order</button>
+              <p class="summary-fine">Next you&rsquo;ll get your order reference and bank transfer details. By placing an order you agree to the <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>.</p>
             </aside>
           </div>
         </form>
@@ -164,7 +164,7 @@
         </div>
         <ol class="why-list">
           <li class="why-item reveal"><span class="why-n" aria-hidden="true">01</span><div><h3>Transparent pricing</h3><p>Every service is priced individually. Pick only what you need and see the exact total before you pay.</p></div></li>
-          <li class="why-item reveal" style="--d:60ms"><span class="why-n" aria-hidden="true">02</span><div><h3>Secure payment</h3><p>All payments are processed securely through Paystack: cards, bank transfer and USSD accepted.</p></div></li>
+          <li class="why-item reveal" style="--d:60ms"><span class="why-n" aria-hidden="true">02</span><div><h3>Simple payment</h3><p>Pay by bank transfer, send your receipt on WhatsApp, and we confirm your payment before work starts.</p></div></li>
           <li class="why-item reveal" style="--d:120ms"><span class="why-n" aria-hidden="true">03</span><div><h3>Real-time tracking</h3><p>Track every order from submission to delivery with a reference number and live status updates.</p></div></li>
           <li class="why-item reveal" style="--d:180ms"><span class="why-n" aria-hidden="true">04</span><div><h3>Confidential &amp; secure</h3><p>Your documents and project details are handled with strict confidentiality throughout.</p></div></li>
         </ol>
@@ -180,9 +180,9 @@
         </div>
         <div class="faq-list reveal" style="--d:80ms">
           <details><summary>How does pricing work?</summary><p>Every service has a fixed, published price shown on this page. Select what you need, and the total updates instantly. There are no hidden fees beyond the delivery speed you choose.</p></details>
-          <details><summary>How do I pay?</summary><p>Payment is handled securely through Paystack, supporting cards, bank transfer, and USSD. You'll be redirected to Paystack's secure checkout immediately after submitting your order.</p></details>
-          <details><summary>What happens after I submit my order?</summary><p>You'll receive a unique order reference and a confirmation email. Your order enters our queue, and you can track its status anytime using your reference and email at <a href="/track">/track</a>, or from your dashboard if you're logged in.</p></details>
-          <details><summary>Can I upload supporting documents?</summary><p>Yes. Once your order is placed, log in to your dashboard to upload any relevant files (PDF, Word, Excel, PowerPoint, images, or ZIP, up to 15MB each).</p></details>
+          <details><summary>How do I pay?</summary><p>By bank transfer. After you place your order you'll see the account details and your order reference (also sent to your email). Use the reference as the transfer narration, then send your payment receipt to us on WhatsApp at <a href="https://wa.me/<%= site.whatsappIntl %>"><%= site.whatsappDisplay %></a>.</p></details>
+          <details><summary>What happens after I submit my order?</summary><p>You'll receive a unique order reference and an email with payment details. Once we've confirmed your transfer, your order enters our queue and we email you a link to set up your dashboard. You can track its status anytime using your reference and email at <a href="/track">Track order</a>.</p></details>
+          <details><summary>Can I upload supporting documents?</summary><p>Yes. Once your payment is confirmed, log in to your dashboard to upload any relevant files (PDF, Word, Excel, PowerPoint, images, or ZIP, up to 15MB each).</p></details>
           <details><summary>What's your revision and refund policy?</summary><p>Specific revision and refund terms depend on the service and are confirmed with you directly. WhatsApp us at <a href="https://wa.me/<%= site.whatsappIntl %>"><%= site.whatsappDisplay %></a> before or after ordering if you have questions about a specific case.</p></details>
           <details><summary>Is my information kept confidential?</summary><p>Yes. Your project details and uploaded documents are only accessible to you and our team, and are never shared with third parties. See our <a href="/privacy">Privacy Policy</a> for details.</p></details>
           <details><summary>Do you guarantee specific grades or outcomes?</summary><p>No. We provide structured support, guidance, and deliverables based on your requirements. We don't control or guarantee academic grading, approval, or publication outcomes.</p></details>
