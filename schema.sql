@@ -42,3 +42,12 @@ CREATE TABLE IF NOT EXISTS xh_order_documents (
   uploaded_by TEXT NOT NULL DEFAULT 'student',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Login sessions (express-session via connect-pg-simple). The app creates this table
+-- automatically on first start; it is listed here for reference.
+CREATE TABLE IF NOT EXISTS xh_sessions (
+  sid VARCHAR NOT NULL PRIMARY KEY,
+  sess JSON NOT NULL,
+  expire TIMESTAMP(6) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON xh_sessions (expire);

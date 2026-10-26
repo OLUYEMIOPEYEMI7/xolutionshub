@@ -22,7 +22,16 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Sessions live in Postgres so logins, CSRF tokens and the "order placed" page survive
+// restarts and redeploys (Render's free plan sleeps and restarts the process). The table
+// is created on first start. Without DATABASE_URL (local dev) the in-memory store is used.
+const PgSession = require('connect-pg-simple')(session);
+const sessionStore = process.env.DATABASE_URL
+  ? new PgSession({ pool: db.pool, tableName: 'xh_sessions', createTableIfMissing: true })
+  : undefined;
+
 app.use(session({
+  store: sessionStore,
   secret: process.env.SESSION_SECRET || 'xh-dev-secret-change-me',
   resave: false,
   saveUninitialized: false,
