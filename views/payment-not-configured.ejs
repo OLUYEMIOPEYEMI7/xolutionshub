@@ -3,13 +3,15 @@
 <head><%- include('partials/head', { pageTitle: 'Payment Not Available | XOLUTIONS HUB', pageDescription: 'Online payment is not yet configured.', noindex: true }) %></head>
 <body>
   <%- include('partials/nav') %>
-  <main class="page-wrap">
-    <div class="auth-card">
-      <h1>Payments Not Yet Set Up</h1>
-      <p class="sub">Your order <strong><%= order.reference %></strong> was saved, but online payment isn't configured yet. Please contact us to arrange payment.</p>
-      <a href="https://wa.me/2349041372994" class="btn btn-block btn-whatsapp"><%- include('partials/icon', {name:'whatsapp', size:15}) %> WhatsApp Us</a>
+  <main id="main" tabindex="-1" class="page">
+    <div class="wrap page-narrow">
+      <div class="auth-card">
+        <h1>Payments not yet set up</h1>
+        <p class="sub">Your order <strong><%= order.reference %></strong> was saved, but online payment isn't configured yet. Please contact us to arrange payment.</p>
+        <a href="https://wa.me/<%= site.whatsappIntl %>" class="btn btn-block btn-lg btn-whatsapp"><%- include('partials/icon', {name:'whatsapp', size:15}) %> WhatsApp us</a>
+      </div>
     </div>
   </main>
-
+  <%- include('partials/footer') %>
 </body>
 </html>

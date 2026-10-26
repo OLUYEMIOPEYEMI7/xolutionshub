@@ -1,47 +1,40 @@
-<div class="nav">
-  <a href="/" class="brand"><span class="brand-mark">X</span><div><div>XOLUTIONS HUB</div><div class="brand-sub">Students &middot; Reports &middot; Solutions</div></div></a>
-  <div class="nav-links">
-    <a href="/#builder" class="navlink">Services</a>
-    <a href="/#faq" class="navlink">FAQ</a>
-    <a href="/track" class="navlink">Track Order</a>
-    <% if (typeof currentStudent !== 'undefined' && currentStudent) { %>
-      <a href="<%= currentStudent.isAdmin ? '/admin' : '/dashboard' %>" class="navlink">Dashboard</a>
-      <form method="POST" action="/logout" style="display:inline;"><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><button class="btn-outline" type="submit">Logout</button></form>
-    <% } else { %>
-      <a href="/login" class="navlink">Login</a>
-      <a href="/#builder" class="btn">Start Your Order</a>
-    <% } %>
+<% const _cur = typeof currentStudent !== 'undefined' ? currentStudent : null; %>
+<% const _page = typeof activeNav !== 'undefined' ? activeNav : ''; %>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav-shell" id="nav-shell">
+  <div class="wrap nav">
+    <a href="/" class="brand" aria-label="XOLUTIONS HUB home">
+      <span class="brand-mark" aria-hidden="true">X</span>
+      <span class="brand-text"><strong>XOLUTIONS HUB</strong><span class="brand-sub">Students &middot; Reports &middot; Solutions</span></span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="/#builder" class="navlink">Services</a>
+      <a href="/#why" class="navlink">Why us</a>
+      <a href="/#faq" class="navlink">FAQ</a>
+      <a href="/track" class="navlink"<%- _page === 'track' ? ' aria-current="page"' : '' %>>Track order</a>
+      <% if (_cur) { %>
+        <a href="<%= _cur.isAdmin ? '/admin' : '/dashboard' %>" class="navlink"<%- _page === 'dashboard' ? ' aria-current="page"' : '' %>>Dashboard</a>
+        <form method="POST" action="/logout" class="nav-form"><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><button class="btn btn-outline btn-sm" type="submit">Log out</button></form>
+      <% } else { %>
+        <a href="/login" class="navlink"<%- _page === 'login' ? ' aria-current="page"' : '' %>>Log in</a>
+        <a href="/#builder" class="btn btn-sm">Start your order</a>
+      <% } %>
+    </nav>
+    <button class="nav-burger" id="nav-burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-mobile-menu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
-  <button class="nav-burger" id="nav-burger" aria-label="Open menu" aria-expanded="false" aria-controls="nav-mobile-menu">
-    <span></span><span></span><span></span>
-  </button>
-</div>
-<div class="nav-mobile-menu" id="nav-mobile-menu">
-  <a href="/#builder">Services</a>
-  <a href="/#faq">FAQ</a>
-  <a href="/track">Track Order</a>
-  <% if (typeof currentStudent !== 'undefined' && currentStudent) { %>
-    <a href="<%= currentStudent.isAdmin ? '/admin' : '/dashboard' %>">Dashboard</a>
-    <form method="POST" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><button type="submit">Logout</button></form>
-  <% } else { %>
-    <a href="/login">Login</a>
-    <a href="/#builder" class="btn btn-block" style="margin-top:6px;">Start Your Order</a>
-  <% } %>
-</div>
-<script>
-  (function () {
-    const burger = document.getElementById('nav-burger');
-    const menu = document.getElementById('nav-mobile-menu');
-    if (!burger || !menu) return;
-    burger.addEventListener('click', function () {
-      const open = menu.classList.toggle('open');
-      burger.setAttribute('aria-expanded', open ? 'true' : 'false');
-      burger.classList.toggle('active', open);
-    });
-    menu.querySelectorAll('a, button').forEach(el => el.addEventListener('click', () => {
-      menu.classList.remove('open');
-      burger.setAttribute('aria-expanded', 'false');
-      burger.classList.remove('active');
-    }));
-  })();
-</script>
+  <nav class="nav-mobile-menu" id="nav-mobile-menu" aria-label="Mobile">
+    <a href="/#builder">Services</a>
+    <a href="/#why">Why us</a>
+    <a href="/#faq">FAQ</a>
+    <a href="/track">Track order</a>
+    <% if (_cur) { %>
+      <a href="<%= _cur.isAdmin ? '/admin' : '/dashboard' %>">Dashboard</a>
+      <form method="POST" action="/logout"><input type="hidden" name="_csrf" value="<%= csrfToken %>" /><button type="submit">Log out</button></form>
+    <% } else { %>
+      <a href="/login">Log in</a>
+      <a href="/#builder" class="btn btn-block" style="margin-top:6px;">Start your order</a>
+    <% } %>
+  </nav>
+</header>

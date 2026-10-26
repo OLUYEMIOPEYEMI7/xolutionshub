@@ -2,26 +2,33 @@
 <html lang="en">
 <head><%- include('partials/head', { pageTitle: 'Admin | XOLUTIONS HUB', pageDescription: 'Admin order management.', noindex: true }) %></head>
 <body>
-  <%- include('partials/nav') %>
-  <main style="max-width:1160px; margin:40px auto; padding:0 24px;">
-    <h1>All Orders (<%= orders.length %>)</h1>
-    <table class="admin-table" style="margin-top:20px;">
-      <thead><tr><th>Reference</th><th>Name</th><th>Email</th><th>Total</th><th>Payment</th><th>Status</th><th>Placed</th><th></th></tr></thead>
-      <tbody>
-        <% orders.forEach(o => { %>
-          <tr>
-            <td><%= o.reference %></td>
-            <td><%= o.name %></td>
-            <td><%= o.email %></td>
-            <td>₦<%= o.grand_total.toLocaleString('en-NG') %></td>
-            <td><%= o.payment_status %></td>
-            <td><span class="status-pill status-<%= o.order_status %>"><%= o.order_status.replace(/_/g, ' ') %></span></td>
-            <td><%= new Date(o.created_at).toLocaleDateString('en-NG') %></td>
-            <td><a href="/admin/orders/<%= o.id %>" style="color:var(--navy); font-weight:600;">View →</a></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+  <%- include('partials/nav', { activeNav: 'dashboard' }) %>
+  <main id="main" tabindex="-1" class="page">
+    <div class="wrap">
+      <p class="eyebrow">Admin</p>
+      <h1 class="h1">All orders (<%= orders.length %>)</h1>
+      <div class="table-scroll" role="region" aria-label="Orders table" tabindex="0">
+        <table class="admin-table">
+          <thead><tr><th scope="col">Reference</th><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Total</th><th scope="col">Payment</th><th scope="col">Status</th><th scope="col">Placed</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+          <tbody>
+            <% orders.forEach(o => { %>
+              <tr>
+                <td><strong><%= o.reference %></strong></td>
+                <td><%= o.name %></td>
+                <td><%= o.email %></td>
+                <td>₦<%= o.grand_total.toLocaleString('en-NG') %></td>
+                <td><%= o.payment_status %></td>
+                <td><span class="status-pill status-<%= o.order_status %>"><%= o.order_status.replace(/_/g, ' ') %></span></td>
+                <td><%= new Date(o.created_at).toLocaleDateString('en-NG') %></td>
+                <td><a href="/admin/orders/<%= o.id %>">View<span class="sr-only"> order <%= o.reference %></span> &rarr;</a></td>
+              </tr>
+            <% }) %>
+            <% if (orders.length === 0) { %><tr><td colspan="8" class="muted">No orders yet.</td></tr><% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </main>
+  <%- include('partials/footer') %>
 </body>
 </html>

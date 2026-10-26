@@ -57,12 +57,12 @@ router.post('/order', async (req, res) => {
   if (!Array.isArray(itemKeys)) itemKeys = [itemKeys];
 
   if (!name || !email || itemKeys.length === 0) {
-    return res.render('landing', { services, error: 'Please select at least one service and fill in your name and email.' });
+    return res.render('landing', { services, form: req.body, error: 'Please select at least one service and fill in your name and email.' });
   }
 
   const { items, servicesTotal, handlingTotal, grandTotal } = computeOrder(itemKeys, deliverySpeed);
   if (items.length === 0) {
-    return res.render('landing', { services, error: 'The selected services are not valid. Please try again.' });
+    return res.render('landing', { services, form: req.body, error: 'The selected services are not valid. Please try again.' });
   }
 
   const reference = genReference();
@@ -92,13 +92,13 @@ router.post('/order', async (req, res) => {
     });
     const data = await initRes.json();
     if (!data.status) {
-      return res.render('landing', { services, error: 'Payment initialization failed: ' + (data.message || 'unknown error') });
+      return res.render('landing', { services, form: req.body, error: 'Payment initialization failed: ' + (data.message || 'unknown error') });
     }
 
     res.redirect(data.data.authorization_url);
   } catch (err) {
     console.error('Order creation failed:', err.message);
-    res.render('landing', { services, error: 'Something went wrong creating your order. Please try again.' });
+    res.render('landing', { services, form: req.body, error: 'Something went wrong creating your order. Please try again.' });
   }
 });
 

@@ -2,20 +2,23 @@
 <html lang="en">
 <head><%- include('partials/head', { pageTitle: 'Login | XOLUTIONS HUB', pageDescription: 'Log in to your XOLUTIONS HUB account to track orders and upload documents.', noindex: true }) %></head>
 <body>
-  <%- include('partials/nav') %>
-  <main class="page-wrap">
-    <div class="auth-card">
-      <h1>Welcome Back</h1>
-      <p class="sub">Log in to view your orders and upload documents. (Your account was created automatically when you placed your first order.)</p>
-      <% if (error) { %><div class="error-banner"><%= error %></div><% } %>
-      <form method="POST" action="/login">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-        <div class="form-group"><label>Email Address</label><input type="email" name="email" required placeholder="you@example.com" /></div>
-        <div class="form-group"><label>Password</label><input type="password" name="password" required placeholder="••••••••" /></div>
-        <button class="btn btn-block" type="submit">Log In</button>
-      </form>
-      <p class="muted" style="font-size:13px; margin-top:18px; text-align:center;">Forgot your password or never set one? WhatsApp us: <a href="https://wa.me/2349041372994" style="color:var(--orange); font-weight:600;">0904 137 2994</a></p>
+  <%- include('partials/nav', { activeNav: 'login' }) %>
+  <main id="main" tabindex="-1" class="page">
+    <div class="wrap page-narrow">
+      <div class="auth-card">
+        <h1>Welcome back</h1>
+        <p class="sub">Log in to view your orders and upload documents. Your account is created automatically when you place your first order.</p>
+        <% if (error) { %><div class="error-banner" role="alert"><%= error %></div><% } %>
+        <form method="POST" action="/login">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <div class="form-group"><label for="l-email">Email address</label><input id="l-email" type="email" name="email" required autocomplete="email" inputmode="email" placeholder="you@example.com" /></div>
+          <div class="form-group"><label for="l-pass">Password</label><input id="l-pass" type="password" name="password" required autocomplete="current-password" /></div>
+          <button class="btn btn-block btn-lg" type="submit">Log in</button>
+        </form>
+        <p class="hint center" style="margin-top:var(--s5);">Forgot your password, or never set one? WhatsApp us: <a href="https://wa.me/<%= site.whatsappIntl %>"><%= site.whatsappDisplay %></a></p>
+      </div>
     </div>
   </main>
+  <%- include('partials/footer') %>
 </body>
 </html>

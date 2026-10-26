@@ -3,25 +3,27 @@
 <head><%- include('partials/head', { pageTitle: 'Activate Your Account | XOLUTIONS HUB', pageDescription: 'Set a password to activate your XOLUTIONS HUB account.', noindex: true }) %></head>
 <body>
   <%- include('partials/nav') %>
-  <main class="page-wrap">
-    <div class="auth-card">
-      <% if (order) { %>
-        <h1>Payment Successful</h1>
-        <p class="sub">Order <strong><%= order.reference %></strong> is confirmed. Set a password now so you can log back in to track this order and upload documents.</p>
-        <% if (error) { %><div class="error-banner"><%= error %></div><% } %>
-        <form method="POST" action="/activate">
-          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-          <input type="hidden" name="ref" value="<%= order.reference %>" />
-          <div class="form-group"><label>Create a Password</label><input type="password" name="password" required minlength="6" placeholder="At least 6 characters" /></div>
-          <button class="btn btn-block" type="submit">Set Password &amp; Go to Dashboard</button>
-        </form>
-      <% } else { %>
-        <h1>Link Invalid</h1>
-        <div class="error-banner"><%= error %></div>
-        <a href="/" class="btn btn-block">Back to Home</a>
-      <% } %>
+  <main id="main" tabindex="-1" class="page">
+    <div class="wrap page-narrow">
+      <div class="auth-card">
+        <% if (order) { %>
+          <h1>Payment successful</h1>
+          <p class="sub">Order <strong><%= order.reference %></strong> is confirmed. Set a password now so you can log back in to track this order and upload documents.</p>
+          <% if (error) { %><div class="error-banner" role="alert"><%= error %></div><% } %>
+          <form method="POST" action="/activate">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <input type="hidden" name="ref" value="<%= order.reference %>" />
+            <div class="form-group"><label for="a-pass">Create a password</label><input id="a-pass" type="password" name="password" required minlength="6" autocomplete="new-password" aria-describedby="a-hint" /><p class="hint" id="a-hint">At least 6 characters.</p></div>
+            <button class="btn btn-block btn-lg" type="submit">Set password &amp; go to dashboard</button>
+          </form>
+        <% } else { %>
+          <h1>Link invalid</h1>
+          <div class="error-banner" role="alert"><%= error %></div>
+          <a href="/" class="btn btn-block">Back to home</a>
+        <% } %>
+      </div>
     </div>
   </main>
-
+  <%- include('partials/footer') %>
 </body>
 </html>

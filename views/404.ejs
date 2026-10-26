@@ -3,11 +3,14 @@
 <head><%- include('partials/head', { pageTitle: 'Page Not Found | XOLUTIONS HUB', pageDescription: 'The page you requested could not be found.', noindex: true }) %></head>
 <body>
   <%- include('partials/nav') %>
-  <main class="page-wrap center">
-    <h1 style="font-size:60px; margin-bottom:10px;">404</h1>
-    <p class="muted" style="margin-bottom:24px;">That page doesn't exist.</p>
-    <a href="/" class="btn">Back to Home</a>
+  <main id="main" tabindex="-1" class="page">
+    <div class="wrap center">
+      <p class="notfound" aria-hidden="true">404</p>
+      <h1 class="h1">That page doesn&rsquo;t exist.</h1>
+      <p class="muted">The link may be old, or the address mistyped.</p>
+      <a href="/" class="btn btn-lg">Back to home</a>
+    </div>
   </main>
-
+  <%- include('partials/footer') %>
 </body>
 </html>
